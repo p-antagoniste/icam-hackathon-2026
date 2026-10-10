@@ -10,6 +10,7 @@ from screens import (
     update_and_draw_dungeon,
     draw_weaving_screen,
     draw_win_screen,
+    draw_demo_screen
 )
 
 # The game is split in small files:
@@ -53,6 +54,8 @@ while game_status:
         draw_weaving_screen()
     elif game.state == "WIN":
         draw_win_screen()
+    elif game.state == "DEMO":
+        draw_demo_screen()
 
     pygame.display.update()
     clock.tick(60)

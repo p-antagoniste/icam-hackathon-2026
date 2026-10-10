@@ -67,7 +67,37 @@ def update_and_draw_dungeon():
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
     draw_state_name("WEAVING")
+    textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number and press SPACE to confirm your choice."]
+    for i, texte in enumerate(textes):
+        draw_mission_texte(texte, i * 35)
+    last_key = 0
+    if pygame.key.get_pressed()[pygame.K_1]:
+        last_key = 1
+    elif pygame.key.get_pressed()[pygame.K_2]:
+        last_key = 2
+        print("last_key", last_key)
+    elif pygame.key.get_pressed()[pygame.K_3]:
+        last_key = 3
+    elif pygame.key.get_pressed()[pygame.K_SPACE]:
+        print("last_key", last_key)
+        if last_key == 1:
+            game.state = "WIN"
+        elif last_key == 2:
+            game.state = "DEMO"
+        elif last_key == 3:
+            game.state = "DEMO"
+
 
 def draw_win_screen():
     screen_surface.fill((120, 90, 20))
     draw_state_name("WIN")
+
+def draw_demo_screen():
+    screen_surface.fill((20, 90, 90))
+    draw_state_name("DEMO")
+    textes = ["Sorry you are in the demo ","buy the full game","to chose this way","if you bought it call this number: 1-800-123-4567","if you want to countinue the demo press SPACE to go back to the weaving screen"]
+    for i, texte in enumerate(textes):
+            draw_mission_texte(texte, i * 35)
+    time.sleep(1)  # to avoid the key being pressed too many times
+    if pygame.key.get_pressed()[pygame.K_SPACE]:
+        game.state = "WEAVING"
