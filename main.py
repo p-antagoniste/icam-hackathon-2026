@@ -1,5 +1,6 @@
 import pygame
 import time
+import math
 import os
 
 pygame.init()
@@ -48,18 +49,20 @@ LEVEL_1 = [
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 
-FLOOR_COLOR = (20, 25, 70)  # dark blue
-TILE_COLORS = {
-    "W": (60, 20, 90),    # dark purple
-    "K": (240, 200, 40),  # yellow
-    "D": (92, 153, 247),   # brown
-}
-
 # ---------------- FUNCTIONS ----------------
 
 def load_sprite(*path_parts):
     # Load a PNG from the grafiki folder, keeping its transparency
     return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
+
+def make_glow(radius, color, max_alpha):
+    # A soft light disc: opaque-ish in the middle, fading to invisible at the edge.
+    # Big circles first, then smaller ones on top, each a bit less transparent.
+    glow = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+    for r in range(radius, 0, -1):
+        alpha = int(max_alpha * (1 - r / radius))
+        pygame.draw.circle(glow, (*color, alpha), (radius, radius), r)
+    return glow
 
 def player_hitbox(x, y):
     # A box a bit smaller than a tile, so the player slips easily into corridors
@@ -119,8 +122,11 @@ def find_tile(level, letter):
 def draw_level(level):
     for y, row in enumerate(level):
         for x, tile in enumerate(row):
-            color = TILE_COLORS.get(tile, FLOOR_COLOR)  # P and . are floor
-            pygame.draw.rect(screen_surface, color, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+            position = (x * TILE_SIZE, y * TILE_SIZE)
+            # Floor first, so the key and the door have floor around them
+            screen_surface.blit(floor_image, position)
+            if tile in tile_images:
+                screen_surface.blit(tile_images[tile], position)
 
 def draw_state_name(name):
     text = font.render(name, True, TEXT_COLOR)
@@ -170,6 +176,11 @@ def update_and_draw_dungeon():
     move_player(pygame.key.get_pressed())
 
     draw_level(LEVEL_1)
+
+    # The glow slowly pulses (between 60% and 100% strength), like in a dream
+    player_glow.set_alpha(int(204 + 51 * math.sin(time.time() * 3)))
+    screen_surface.blit(player_glow, player_glow.get_rect(center=(player_x, player_y)))
+
     player_image = player_images[player_direction]
     screen_surface.blit(player_image, player_image.get_rect(center=(player_x, player_y)))
 
@@ -180,6 +191,17 @@ def draw_weaving_screen():
 def draw_win_screen():
     screen_surface.fill((120, 90, 20))
     draw_state_name("WIN")
+
+# ---------------- TILES ----------------
+
+# Pictures made with PixelLab
+floor_image = load_sprite("tiles", "floor.png")
+# Drawn on top of the floor, one per map letter (P and . are just floor)
+tile_images = {
+    "W": load_sprite("tiles", "wall.png"),
+    "K": load_sprite("objects", "key.png"),
+    "D": load_sprite("objects", "door_closed.png"),
+}
 
 # ---------------- PLAYER ----------------
 
@@ -199,6 +221,9 @@ player_images = {
     "east": load_sprite("player", "east.png"),
     "west": load_sprite("player", "west.png"),
 }
+
+# Soft cyan light under the player, so the dark cloak stands out on the dark floor
+player_glow = make_glow(radius=32, color=(80, 200, 255), max_alpha=170)
 
 
 font = pygame.font.SysFont(None, 36)
