@@ -25,6 +25,8 @@ LEVEL_1 = [
     "W..................W",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
+# A copy of the map as it is at the start: picking up the key changes LEVEL_1
+LEVEL_1_START = list(LEVEL_1)
 
 # ---------------- TILES ----------------
 
@@ -46,6 +48,11 @@ def find_tile(level, letter):
             if tile == letter:
                 return x, y
     return None
+
+def reset_level():
+    # Put the key back for a new game.
+    # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
+    LEVEL_1[:] = LEVEL_1_START
 
 def draw_level(level):
     for y, row in enumerate(level):

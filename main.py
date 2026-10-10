@@ -32,11 +32,12 @@ game_status = True
 while game_status:
     now = time.time()
 
+    game.keys_down = []
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_status = False
-        # Temporary: SPACE goes to the next state, to test the skeleton
-
+        elif event.type == pygame.KEYDOWN:
+            game.keys_down.append(event.key)
 
     # A new screen just started: play its sound once
     if game.state != previous_state:

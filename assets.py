@@ -11,6 +11,12 @@ def load_sprite(*path_parts):
     # Load a PNG from the grafiki folder, keeping its transparency
     return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
 
+def load_animation(*path_parts):
+    # Load every picture of an animated GIF from the grafiki folder, keeping their transparency
+    # (load_animation gives (picture, duration) pairs: only the pictures are kept)
+    frames = pygame.image.load_animation(os.path.join(BASE_DIR, "grafiki", *path_parts))
+    return [picture.convert_alpha() for picture, duration in frames]
+
 def load_sound(name):
     # Load an MP3 from the sound folder
     return pygame.mixer.Sound(os.path.join(BASE_DIR, "sound", name + ".mp3"))
