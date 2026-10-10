@@ -30,6 +30,8 @@ def draw_mission_screen():
     textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
     for i, texte in enumerate(textes):
         draw_mission_texte(texte, i * 35)
+    if pygame.key.get_pressed()[pygame.K_SPACE]:
+        game.state = "TRANSITION"
 
 def draw_transition_screen():
     global transition_start
@@ -71,25 +73,16 @@ def update_and_draw_dungeon():
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
     draw_state_name("WEAVING")
-    textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number and press SPACE to confirm your choice."]
+    textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number."]
     for i, texte in enumerate(textes):
         draw_mission_texte(texte, i * 35)
-    last_key = 0
     if pygame.key.get_pressed()[pygame.K_1]:
-        last_key = 1
+        game.state = "WIN"
     elif pygame.key.get_pressed()[pygame.K_2]:
-        last_key = 2
-        print("last_key", last_key)
+        game.state = "DEMO"
     elif pygame.key.get_pressed()[pygame.K_3]:
-        last_key = 3
-    elif pygame.key.get_pressed()[pygame.K_SPACE]:
-        print("last_key", last_key)
-        if last_key == 1:
-            game.state = "WIN"
-        elif last_key == 2:
-            game.state = "DEMO"
-        elif last_key == 3:
-            game.state = "DEMO"
+        game.state = "DEMO"
+
 
 
 def draw_win_screen():

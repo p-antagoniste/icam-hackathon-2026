@@ -36,8 +36,7 @@ while game_status:
         if event.type == pygame.QUIT:
             game_status = False
         # Temporary: SPACE goes to the next state, to test the skeleton
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            game.state = game.next_state(game.state)
+
 
     # A new screen just started: play its sound once
     if game.state != previous_state:
