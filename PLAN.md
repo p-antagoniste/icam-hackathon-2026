@@ -29,7 +29,7 @@ If time runs out after step 7, you still have a complete game with a start, a mi
 | Grid | **Tiles of 40 × 40 px**, so 20 columns × 18 rows | The player sprites (`grafiki/player/`) are 40 × 40 |
 | Map | A **list of strings**, one letter per tile | Edit the level in a text editor, no tools needed |
 | Movement | **Smooth, in pixels, while the key is held** | Walls are checked with a small hitbox against the `W` tiles |
-| Code layout | Keep a single `main.py` for now | Easy to read. Split it later only if it gets long |
+| Code layout | Small files of about 100 lines (`main.py` is the game loop, the list of files is at its top) | Easy to read: each file does one job |
 | Graphics | Coloured rectangles first, images later | Gameplay first, art second |
 
 ## 4. The core idea: game "states"

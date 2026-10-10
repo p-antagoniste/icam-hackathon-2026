@@ -1,0 +1,39 @@
+import os
+import pygame
+
+import window  # the window must be open before loading pictures
+
+BASE_DIR = os.path.dirname(__file__)
+
+# ---------------- FUNCTIONS ----------------
+
+def load_sprite(*path_parts):
+    # Load a PNG from the grafiki folder, keeping its transparency
+    return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
+
+def load_sound(name):
+    # Load an MP3 from the sound folder
+    return pygame.mixer.Sound(os.path.join(BASE_DIR, "sound", name + ".mp3"))
+
+def start_music():
+    # Dreamy background music made with Suno, played on a loop (-1) during the whole game
+    pygame.mixer.music.load(os.path.join(BASE_DIR, "music", "Inception Heist.mp3"))
+    pygame.mixer.music.set_volume(0.5)  # 0 = silent, 1 = full volume
+    pygame.mixer.music.play(-1)
+
+# ---------------- SOUNDS ----------------
+
+# Sound effects made with ElevenLabs
+sounds = {
+    "key_pickup": load_sound("key_pickup"),
+    "door_open": load_sound("door_open"),
+    "locked_door_bump": load_sound("locked_door_bump"),
+    "entering_dream": load_sound("entering_dream"),
+    "weaving_dream": load_sound("weaving_dream"),
+}
+
+# Played once when a screen starts
+SCREEN_SOUNDS = {
+    "TRANSITION": "entering_dream",
+    "WEAVING": "weaving_dream",
+}
