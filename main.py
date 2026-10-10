@@ -95,9 +95,7 @@ while game_status:
     screen_surface.fill(background_color)
     screen_surface.blit(rotated_player, rotated_rect)
 
-    # draw score
-    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    screen_surface.blit(score_text, (10, 10))
+
 
     pygame.display.update()
     clock.tick(60)
