@@ -23,6 +23,35 @@ TEXT_COLOR = (255, 255, 255)
 TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
 
+# ---------------- DUNGEON ----------------
+TILE_SIZE = 40  # 20 columns x 15 rows on an 800 x 600 screen
+
+# W = wall, . = floor, P = player start, K = key, D = door
+LEVEL_1 = [
+    "WWWWWWWWWWWWWWWWWWWW",
+    "WP.....W...........W",
+    "W.WWWW.W.WWWWWWWWW.W",
+    "W.W....W.........W.W",
+    "W.W.WWWWWWWWWWWW.W.W",
+    "W.W......W.....W.W.W",
+    "W.WWWWWW.W.WWW.W.W.W",
+    "W......W.W..KW.W...W",
+    "WWWWWW.W.WWWWW.WWWWW",
+    "W......W.......W...W",
+    "W.WWWWWWWWWWWW.W.W.W",
+    "W..............W.W.W",
+    "WWWWWWWWWWWWW.WW.W.W",
+    "W................W.D",
+    "WWWWWWWWWWWWWWWWWWWW",
+]
+
+FLOOR_COLOR = (20, 25, 70)  # dark blue
+TILE_COLORS = {
+    "W": (60, 20, 90),    # dark purple
+    "K": (240, 200, 40),  # yellow
+    "D": (120, 70, 30),   # brown
+}
+
 # ---------------- FUNCTIONS ----------------
 
 def load_image(img_path, position, transparent_color=None):
@@ -58,6 +87,20 @@ def next_state(current_state):
     # After the last state, go back to the first one
     index = STATES.index(current_state)
     return STATES[(index + 1) % len(STATES)]
+
+def find_tile(level, letter):
+    # Return the (column, row) of the first tile with this letter
+    for y, row in enumerate(level):
+        for x, tile in enumerate(row):
+            if tile == letter:
+                return x, y
+    return None
+
+def draw_level(level):
+    for y, row in enumerate(level):
+        for x, tile in enumerate(row):
+            color = TILE_COLORS.get(tile, FLOOR_COLOR)  # P and . are floor
+            pygame.draw.rect(screen_surface, color, (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
 def draw_state_name(name):
     text = font.render(name, True, TEXT_COLOR)
@@ -126,9 +169,8 @@ def update_and_draw_dungeon():
     rotated_rect = rotated_player.get_rect(center=player_pos)
 
     # --- DRAWING ---
-    screen_surface.fill((20, 25, 70))
+    draw_level(LEVEL_1)
     screen_surface.blit(rotated_player, rotated_rect)
-    draw_state_name("DUNGEON")
 
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
@@ -140,7 +182,9 @@ def draw_win_screen():
 
 # ---------------- PLAYER ----------------
 
-player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
+# Start in the middle of the P tile
+start_x, start_y = find_tile(LEVEL_1, "P")
+player_pos = [start_x * TILE_SIZE + TILE_SIZE // 2, start_y * TILE_SIZE + TILE_SIZE // 2]
 player_angle = 0  # initial angle
 player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
 
