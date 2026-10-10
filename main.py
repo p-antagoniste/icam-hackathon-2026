@@ -12,13 +12,12 @@ SCREEN_HEIGHT = 600
 background_color = [0, 0, 0]
 
 screen_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pierwsza Gra")
+pygame.display.set_caption("Dream weaver")
 clock = pygame.time.Clock()
 
 # ---------------- FUNCTIONS ----------------
 
 def load_image(img_path, position, transparent_color=None):
-    """Load image, handle transparency with alpha or colorkey"""
     image = pygame.image.load(img_path).convert_alpha()
     if transparent_color:
         image.set_colorkey(transparent_color)
@@ -46,23 +45,12 @@ def limit_position(position):
     x = max(0, min(x, SCREEN_WIDTH))
     y = max(0, min(y, SCREEN_HEIGHT))
     return [x, y]
-"""
-def screns_play(position):
-    x, y = position
-    arena = ([[1,7,3]
-              [4,7,5]
-              [6,7,8]])
-    hight = 1
-    length = 1
-    if y == SCREEN_HEIGHT:
-"""
+
 # ---------------- PLAYER ----------------
 
 player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
 player_angle = 0  # initial angle
 player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
-
-# ---------------- RANDOM IMAGES SYSTEM ----------------
 
 
 score = 0
@@ -100,7 +88,7 @@ while game_status:
     rotated_rect = rotated_player.get_rect(center=player_pos)
 
 
-    # --- COLLISION & SCORE ---
+    # --- COLLISION DETECTION ---
 
 
     # --- DRAWING ---
