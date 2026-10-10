@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(__file__)
 
 # ---------------- SCREEN ----------------
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 800
 background_color = [0, 0, 0]
 
 screen_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -24,7 +24,7 @@ TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
 
 # ---------------- DUNGEON ----------------
-TILE_SIZE = 40  # 20 columns x 15 rows on an 800 x 600 screen
+TILE_SIZE = 40  # 20 columns x 20 rows on an 800 x 800 screen
 
 # W = wall, . = floor, P = player start, K = key, D = door
 LEVEL_1 = [
@@ -35,13 +35,18 @@ LEVEL_1 = [
     "W.W.WWWWWWWWWWWW.W.W",
     "W.W......W.....W.W.W",
     "W.WWWWWW.W.WWW.W.W.W",
-    "W......W.W..KW.W...W",
+    "W......W.W..KW.....W",
     "WWWWWW.W.WWWWW.WWWWW",
     "W......W.......W...W",
     "W.WWWWWWWWWWWW.W.W.W",
     "W..............W.W.W",
     "WWWWWWWWWWWWW.WW.W.W",
-    "W................W.D",
+    "W.......W........W.W",
+    "W.WWWWW.W.WWWWWWWWWW",
+    "W.W...W.W.W........W",
+    "W.W.W.W...W.WWWWWW.W",
+    "W...W.WWWWW.W....W.W",
+    "WWWWW.........WW.W.D",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 
@@ -128,11 +133,12 @@ def draw_transition_screen():
     progress = (time.time() - transition_start) / TRANSITION_DURATION
 
     # A circle grows from the centre with rings inside: we fall into the dream
+    # (600 = a bit more than the distance from the centre to a corner)
     screen_surface.fill((15, 10, 30))
     center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    pygame.draw.circle(screen_surface, (60, 20, 90), center, int(progress * 500))
+    pygame.draw.circle(screen_surface, (60, 20, 90), center, int(progress * 600))
     for i in range(1, 6):
-        ring_radius = int(progress * 500) - i * 70
+        ring_radius = int(progress * 600) - i * 70
         if ring_radius > 0:
             pygame.draw.circle(screen_surface, (150, 90, 220), center, ring_radius, 3)
 
