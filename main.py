@@ -228,6 +228,13 @@ player_glow = make_glow(radius=32, color=(80, 200, 255), max_alpha=170)
 
 font = pygame.font.SysFont(None, 36)
 
+# ---------------- MUSIC ----------------
+
+# Dreamy background music made with Suno, played on a loop (-1) during the whole game
+pygame.mixer.music.load(os.path.join(BASE_DIR, "music", "Inception Heist.mp3"))
+pygame.mixer.music.set_volume(0.5)  # 0 = silent, 1 = full volume
+pygame.mixer.music.play(-1)
+
 # ---------------- GAME LOOP ----------------
 
 state = "MISSION"
