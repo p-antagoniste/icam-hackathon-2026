@@ -68,7 +68,7 @@ def draw_mission_screen():
     draw_state_name("MISSION")
     textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
     for i, texte in enumerate(textes):
-        draw_mission_texte(texte, i * 25)
+        draw_mission_texte(texte, i * 35)
 
 def draw_transition_screen():
     screen_surface.fill((60, 20, 90))
