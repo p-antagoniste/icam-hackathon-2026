@@ -59,9 +59,16 @@ def draw_state_name(name):
     text = font.render(name, True, TEXT_COLOR)
     screen_surface.blit(text, text.get_rect(center=(SCREEN_WIDTH // 2, 40)))
 
+def draw_mission_texte(texte, bonus):
+    text = font.render(texte, True, TEXT_COLOR)
+    screen_surface.blit(text, text.get_rect( midtop=(SCREEN_WIDTH - 400, 80 + bonus)))
+
 def draw_mission_screen():
     screen_surface.fill((15, 10, 30))
     draw_state_name("MISSION")
+    textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
+    for i, texte in enumerate(textes):
+        draw_mission_texte(texte, i * 25)
 
 def draw_transition_screen():
     screen_surface.fill((60, 20, 90))
