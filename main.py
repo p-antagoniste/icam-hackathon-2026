@@ -19,6 +19,10 @@ clock = pygame.time.Clock()
 STATES = ["MISSION", "TRANSITION", "DUNGEON", "WEAVING", "WIN"]
 TEXT_COLOR = (255, 255, 255)
 
+# ---------------- TRANSITION ----------------
+TRANSITION_DURATION = 3  # seconds
+transition_start = None  # set on the first frame of the transition
+
 # ---------------- FUNCTIONS ----------------
 
 def load_image(img_path, position, transparent_color=None):
@@ -71,8 +75,31 @@ def draw_mission_screen():
         draw_mission_texte(texte, i * 35)
 
 def draw_transition_screen():
-    screen_surface.fill((60, 20, 90))
-    draw_state_name("TRANSITION")
+    global state, transition_start
+
+    # Remember the time on the first frame of the transition
+    if transition_start is None:
+        transition_start = time.time()
+
+    # progress goes from 0 (start) to 1 (end of the transition)
+    progress = (time.time() - transition_start) / TRANSITION_DURATION
+
+    # A circle grows from the centre with rings inside: we fall into the dream
+    screen_surface.fill((15, 10, 30))
+    center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    pygame.draw.circle(screen_surface, (60, 20, 90), center, int(progress * 500))
+    for i in range(1, 6):
+        ring_radius = int(progress * 500) - i * 70
+        if ring_radius > 0:
+            pygame.draw.circle(screen_surface, (150, 90, 220), center, ring_radius, 3)
+
+    text = font.render("Entering the dream of Mr. Banks...", True, TEXT_COLOR)
+    screen_surface.blit(text, text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60)))
+
+    # When the transition is over, go to the dungeon
+    if progress >= 1:
+        transition_start = None  # ready for the next game
+        state = "DUNGEON"
 
 def update_and_draw_dungeon():
     global player_pos, player_angle
