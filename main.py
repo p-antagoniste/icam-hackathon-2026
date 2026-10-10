@@ -64,26 +64,7 @@ player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos,
 
 # ---------------- RANDOM IMAGES SYSTEM ----------------
 
-bonus_files = ["bonus_1.png", "bonus_2.png", "bonus_3.png"]
-bonus_points = {"bonus_1.png": 1, "bonus_2.png": -5, "bonus_3.png": 3}
 
-random_images = [
-    pygame.image.load(os.path.join(BASE_DIR, "grafiki", f)).convert_alpha() for f in bonus_files
-]
-
-current_random_image = None
-random_rect = None
-current_bonus_name = None  # track which bonus is active
-
-SPAWN_MIN = 10
-SPAWN_MAX = 20
-SHOW_MIN = 3
-SHOW_MAX = 9
-
-next_spawn_time = time.time() + random.randint(SPAWN_MIN, SPAWN_MAX)
-hide_time = 0
-
-# ---------------- SCORE ----------------
 score = 0
 font = pygame.font.SysFont(None, 36)
 
@@ -118,34 +99,13 @@ while game_status:
     rotated_player = pygame.transform.rotate(player[0], player_angle)
     rotated_rect = rotated_player.get_rect(center=player_pos)
 
-    # --- RANDOM IMAGE LOGIC ---
-    if current_random_image is None and now >= next_spawn_time:
-        index = random.randint(0, len(random_images)-1)
-        current_random_image = random_images[index]
-        current_bonus_name = bonus_files[index]
-        random_rect = current_random_image.get_rect()
-        random_rect.x = random.randint(0, SCREEN_WIDTH - random_rect.width)
-        random_rect.y = random.randint(0, SCREEN_HEIGHT - random_rect.height)
-        hide_time = now + random.randint(SHOW_MIN, SHOW_MAX)
-
-    if current_random_image is not None and now >= hide_time:
-        current_random_image = None
-        next_spawn_time = now + random.randint(SPAWN_MIN, SPAWN_MAX)
-        current_bonus_name = None
 
     # --- COLLISION & SCORE ---
-    if current_random_image and rotated_rect.colliderect(random_rect):
-        score += bonus_points[current_bonus_name]  # apply points
-        current_random_image = None
-        current_bonus_name = None
-        next_spawn_time = now + random.randint(SPAWN_MIN, SPAWN_MAX)
+
 
     # --- DRAWING ---
     screen_surface.fill(background_color)
     screen_surface.blit(rotated_player, rotated_rect)
-
-    if current_random_image:
-        screen_surface.blit(current_random_image, random_rect)
 
     # draw score
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
