@@ -55,6 +55,10 @@ def load_sprite(*path_parts):
     # Load a PNG from the grafiki folder, keeping its transparency
     return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
 
+def load_sound(name):
+    # Load an MP3 from the sound folder
+    return pygame.mixer.Sound(os.path.join(BASE_DIR, "sound", name + ".mp3"))
+
 def make_glow(radius, color, max_alpha):
     # A soft light disc: opaque-ish in the middle, fading to invisible at the edge.
     # Big circles first, then smaller ones on top, each a bit less transparent.
@@ -79,10 +83,12 @@ def hits_wall(hitbox):
         if LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "W":
             return True
         elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "D":
-            door_try()
+            if door_try():
+                return True  # locked: the door blocks the player like a wall
         elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "K":
             global have_key
             have_key = True
+            sounds["key_pickup"].play()
             # Remove the key from the level, so it can't be picked up again
             LEVEL_1[corner_y // TILE_SIZE] = LEVEL_1[corner_y // TILE_SIZE][:corner_x // TILE_SIZE] + "." + LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE + 1:]
     return False
@@ -200,8 +206,20 @@ def draw_win_screen():
     draw_state_name("WIN")
 
 def door_try():
-        if have_key:
-            draw_weaving_screen()
+    # Returns True while the door is locked, so it blocks the player
+    global state
+    if have_key:
+        # The door is touched several times per frame: open it only once
+        if state == "DUNGEON":
+            sounds["door_open"].play()
+            state = "WEAVING"
+        return False
+    # get_num_channels() is 0 when the sound is not already playing:
+    # pushing against the door doesn't start a new thud every frame
+    if sounds["locked_door_bump"].get_num_channels() == 0:
+        sounds["locked_door_bump"].play()
+    return True
+
 # ---------------- TILES ----------------
 
 # Pictures made with PixelLab
@@ -246,9 +264,27 @@ pygame.mixer.music.load(os.path.join(BASE_DIR, "music", "Inception Heist.mp3"))
 pygame.mixer.music.set_volume(0.5)  # 0 = silent, 1 = full volume
 pygame.mixer.music.play(-1)
 
+# ---------------- SOUNDS ----------------
+
+# Sound effects made with ElevenLabs
+sounds = {
+    "key_pickup": load_sound("key_pickup"),
+    "door_open": load_sound("door_open"),
+    "locked_door_bump": load_sound("locked_door_bump"),
+    "entering_dream": load_sound("entering_dream"),
+    "weaving_dream": load_sound("weaving_dream"),
+}
+
+# Played once when a screen starts
+SCREEN_SOUNDS = {
+    "TRANSITION": "entering_dream",
+    "WEAVING": "weaving_dream",
+}
+
 # ---------------- GAME LOOP ----------------
 
 state = "MISSION"
+previous_state = None  # to notice when the screen changes
 
 game_status = True
 while game_status:
@@ -260,6 +296,12 @@ while game_status:
         # Temporary: SPACE goes to the next state, to test the skeleton
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             state = next_state(state)
+
+    # A new screen just started: play its sound once
+    if state != previous_state:
+        if state in SCREEN_SOUNDS:
+            sounds[SCREEN_SOUNDS[state]].play()
+        previous_state = state
 
     if state == "MISSION":
         draw_mission_screen()
