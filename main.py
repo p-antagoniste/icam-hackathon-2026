@@ -62,7 +62,7 @@ def load_sprite(*path_parts):
     return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
 
 def calculate_player_movement(keys):
-    speed = 7
+    speed = 5
     delta_x = 0
     delta_y = 0
 
