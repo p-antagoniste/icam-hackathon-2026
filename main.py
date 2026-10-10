@@ -14,6 +14,11 @@ screen_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("The Dream Weaver")
 clock = pygame.time.Clock()
 
+# ---------------- STATES ----------------
+# The game is always on exactly one of these screens, in this order
+STATES = ["MISSION", "TRANSITION", "DUNGEON", "WEAVING", "WIN"]
+TEXT_COLOR = (255, 255, 255)
+
 # ---------------- FUNCTIONS ----------------
 
 def load_image(img_path, position, transparent_color=None):
@@ -45,24 +50,25 @@ def limit_position(position):
     y = max(0, min(y, SCREEN_HEIGHT))
     return [x, y]
 
-# ---------------- PLAYER ----------------
+def next_state(current_state):
+    # After the last state, go back to the first one
+    index = STATES.index(current_state)
+    return STATES[(index + 1) % len(STATES)]
 
-player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
-player_angle = 0  # initial angle
-player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
+def draw_state_name(name):
+    text = font.render(name, True, TEXT_COLOR)
+    screen_surface.blit(text, text.get_rect(center=(SCREEN_WIDTH // 2, 40)))
 
+def draw_mission_screen():
+    screen_surface.fill((15, 10, 30))
+    draw_state_name("MISSION")
 
-font = pygame.font.SysFont(None, 36)
+def draw_transition_screen():
+    screen_surface.fill((60, 20, 90))
+    draw_state_name("TRANSITION")
 
-# ---------------- GAME LOOP ----------------
-
-game_status = True
-while game_status:
-    now = time.time()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game_status = False  
+def update_and_draw_dungeon():
+    global player_pos, player_angle
 
     # --- PLAYER MOVEMENT ---
     pressed_keys = pygame.key.get_pressed()
@@ -85,15 +91,53 @@ while game_status:
     rotated_player = pygame.transform.rotate(player[0], player_angle)
     rotated_rect = rotated_player.get_rect(center=player_pos)
 
-
-    # --- COLLISION DETECTION ---
-
-
     # --- DRAWING ---
-    screen_surface.fill(background_color)
+    screen_surface.fill((20, 25, 70))
     screen_surface.blit(rotated_player, rotated_rect)
+    draw_state_name("DUNGEON")
+
+def draw_weaving_screen():
+    screen_surface.fill((20, 90, 90))
+    draw_state_name("WEAVING")
+
+def draw_win_screen():
+    screen_surface.fill((120, 90, 20))
+    draw_state_name("WIN")
+
+# ---------------- PLAYER ----------------
+
+player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
+player_angle = 0  # initial angle
+player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
 
 
+font = pygame.font.SysFont(None, 36)
+
+# ---------------- GAME LOOP ----------------
+
+state = "MISSION"
+
+game_status = True
+while game_status:
+    now = time.time()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_status = False
+        # Temporary: SPACE goes to the next state, to test the skeleton
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            state = next_state(state)
+
+    if state == "MISSION":
+        draw_mission_screen()
+    elif state == "TRANSITION":
+        draw_transition_screen()
+    elif state == "DUNGEON":
+        update_and_draw_dungeon()
+    elif state == "WEAVING":
+        draw_weaving_screen()
+    elif state == "WIN":
+        draw_win_screen()
 
     pygame.display.update()
     clock.tick(60)
