@@ -46,7 +46,7 @@ LEVEL_1 = [
     "W..................W",
     "W..................W",
     "WWWWWWWWWWWWWWWWWWWW",
-    "WWWWW.........WW.W.D",
+    "WWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 
@@ -54,7 +54,7 @@ FLOOR_COLOR = (20, 25, 70)  # dark blue
 TILE_COLORS = {
     "W": (60, 20, 90),    # dark purple
     "K": (240, 200, 40),  # yellow
-    "D": (120, 70, 30),   # brown
+    "D": (92, 153, 247),   # brown
 }
 
 # ---------------- FUNCTIONS ----------------
