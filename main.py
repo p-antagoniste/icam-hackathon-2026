@@ -59,12 +59,9 @@ TILE_COLORS = {
 
 # ---------------- FUNCTIONS ----------------
 
-def load_image(img_path, position, transparent_color=None):
-    image = pygame.image.load(img_path).convert_alpha()
-    if transparent_color:
-        image.set_colorkey(transparent_color)
-    rect = image.get_rect(center=position)
-    return [image, rect]
+def load_sprite(*path_parts):
+    # Load a PNG from the grafiki folder, keeping its transparency
+    return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
 
 def calculate_player_movement(keys):
     speed = 10
@@ -151,7 +148,7 @@ def draw_transition_screen():
         state = "DUNGEON"
 
 def update_and_draw_dungeon():
-    global player_pos, player_angle
+    global player_pos, player_direction
 
     # --- PLAYER MOVEMENT ---
     pressed_keys = pygame.key.get_pressed()
@@ -161,22 +158,23 @@ def update_and_draw_dungeon():
     player_pos[1] += delta_y
     player_pos = limit_position(player_pos)
 
-    # --- PLAYER ROTATION ---
+    # --- PLAYER DIRECTION ---
+    # The player keeps facing the last direction when standing still
     if delta_x > 0:
-        player_angle = -90
+        player_direction = "east"
     elif delta_x < 0:
-        player_angle = 90
+        player_direction = "west"
     elif delta_y < 0:
-        player_angle = 0
+        player_direction = "north"
     elif delta_y > 0:
-        player_angle = 180
+        player_direction = "south"
 
-    rotated_player = pygame.transform.rotate(player[0], player_angle)
-    rotated_rect = rotated_player.get_rect(center=player_pos)
+    player_image = player_images[player_direction]
+    player_rect = player_image.get_rect(center=player_pos)
 
     # --- DRAWING ---
     draw_level(LEVEL_1)
-    screen_surface.blit(rotated_player, rotated_rect)
+    screen_surface.blit(player_image, player_rect)
 
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
@@ -191,8 +189,15 @@ def draw_win_screen():
 # Start in the middle of the P tile
 start_x, start_y = find_tile(LEVEL_1, "P")
 player_pos = [start_x * TILE_SIZE + TILE_SIZE // 2, start_y * TILE_SIZE + TILE_SIZE // 2]
-player_angle = 0  # initial angle
-player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
+player_direction = "south"  # facing the camera at the start
+
+# One picture per direction, made with PixelLab
+player_images = {
+    "south": load_sprite("player", "south.png"),
+    "north": load_sprite("player", "north.png"),
+    "east": load_sprite("player", "east.png"),
+    "west": load_sprite("player", "west.png"),
+}
 
 
 font = pygame.font.SysFont(None, 36)

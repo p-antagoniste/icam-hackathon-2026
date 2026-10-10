@@ -26,7 +26,7 @@ If time runs out after step 7, you still have a complete game with a start, a mi
 |---|---|---|
 | Language / library | Python + **pygame-ce** (already installed in `.venv`) | Already working in `main.py` |
 | Screen | 800 × 600 (already set) | |
-| Grid | **Tiles of 40 × 40 px**, so 20 columns × 15 rows | `player.png` is already 40 × 40 |
+| Grid | **Tiles of 40 × 40 px**, so 20 columns × 15 rows | The player sprites (`grafiki/player/`) are 40 × 40 |
 | Map | A **list of strings**, one letter per tile | Edit the level in a text editor, no tools needed |
 | Movement | **One key press = one tile** | Wall collisions become very easy (check the target tile) |
 | Code layout | Keep a single `main.py` for now | Easy to read. Split it later only if it gets long |
@@ -147,7 +147,7 @@ LEVEL_1 = [
 - Store the player position **in tiles** (`player_x`, `player_y`), not in pixels.
 - On a `KEYDOWN` event (not `get_pressed`, which moves too fast), compute the target tile.
 - Move only if the target tile is **not** `W`.
-- Draw the player at `(player_x * 40, player_y * 40)`. The existing rotation code can stay.
+- Draw the player at `(player_x * 40, player_y * 40)`. Show the player sprite facing the last move direction (`grafiki/player/north.png`, etc.).
 
 **Done when:** the player walks through the corridors and can't go through walls.
 
@@ -182,7 +182,7 @@ after each one.
 
 | # | Improvement | Effort | Idea |
 |---|---|---|---|
-| A | **Real graphics** | ★☆☆ | 40 × 40 PNGs for wall, floor, key, door, drawn by hand (Piskel, or paper + photo). Use `load_image` like `player.png` |
+| A | **Real graphics** | ★☆☆ | 40 × 40 PNGs for wall, floor, key, door, drawn by hand (Piskel, or paper + photo). Load them with `load_sprite` like the player |
 | B | **Fog of war** | ★☆☆ | Dreams are blurry: draw a black layer over the screen with a transparent circle around the player. Looks great, about 10 lines of code |
 | C | **Timer** | ★☆☆ | "Mr. Banks wakes up in 60 s." If time runs out you're thrown out of the dream (game over → restart) |
 | D | **Sound** | ★☆☆ | Dreamy background music + sounds for "key picked up" and "door opened" (`pygame.mixer`) |
