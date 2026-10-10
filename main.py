@@ -46,7 +46,7 @@ def limit_position(position):
     x = max(0, min(x, SCREEN_WIDTH))
     y = max(0, min(y, SCREEN_HEIGHT))
     return [x, y]
-
+"""
 def screns_play(position):
     x, y = position
     arena = ([[1,7,3]
@@ -55,7 +55,7 @@ def screns_play(position):
     hight = 1
     length = 1
     if y == SCREEN_HEIGHT:
-
+"""
 # ---------------- PLAYER ----------------
 
 player_pos = [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
