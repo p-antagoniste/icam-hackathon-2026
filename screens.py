@@ -4,7 +4,9 @@ import pygame
 import game
 from window import screen_surface, font, TEXT_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT
 from level import LEVEL_1, draw_level
+import player
 from player import move_player, draw_player
+from fog import draw_fog
 
 # One function per state, called every frame by the game loop in main.py
 
@@ -63,6 +65,8 @@ def update_and_draw_dungeon():
 
     draw_level(LEVEL_1)
     draw_player()
+    # player.player_x, not "from player import player_x": that would be a copy that never moves
+    draw_fog(player.player_x, player.player_y)
 
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
