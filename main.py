@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(__file__)
 
 # ---------------- SCREEN ----------------
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 800
+SCREEN_HEIGHT = 720
 background_color = [0, 0, 0]
 
 screen_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -24,7 +24,7 @@ TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
 
 # ---------------- DUNGEON ----------------
-TILE_SIZE = 40  # 20 columns x 20 rows on an 800 x 800 screen
+TILE_SIZE = 40  # 20 columns x 18 rows on an 800 x 720 screen
 
 # W = wall, . = floor, P = player start, K = key, D = door
 LEVEL_1 = [
@@ -45,8 +45,6 @@ LEVEL_1 = [
     "W..WWWWW.......WWWWW",
     "W..................W",
     "W..................W",
-    "WWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 

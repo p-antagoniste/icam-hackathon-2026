@@ -25,8 +25,8 @@ If time runs out after step 7, you still have a complete game with a start, a mi
 | Topic | Choice | Why |
 |---|---|---|
 | Language / library | Python + **pygame-ce** (already installed in `.venv`) | Already working in `main.py` |
-| Screen | 800 × 600 (already set) | |
-| Grid | **Tiles of 40 × 40 px**, so 20 columns × 15 rows | The player sprites (`grafiki/player/`) are 40 × 40 |
+| Screen | 800 × 720 (already set) | |
+| Grid | **Tiles of 40 × 40 px**, so 20 columns × 18 rows | The player sprites (`grafiki/player/`) are 40 × 40 |
 | Map | A **list of strings**, one letter per tile | Edit the level in a text editor, no tools needed |
 | Movement | **One key press = one tile** | Wall collisions become very easy (check the target tile) |
 | Code layout | Keep a single `main.py` for now | Easy to read. Split it later only if it gets long |
