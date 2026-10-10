@@ -67,7 +67,7 @@ def load_image(img_path, position, transparent_color=None):
     return [image, rect]
 
 def calculate_player_movement(keys):
-    speed = 10
+    speed = 7
     delta_x = 0
     delta_y = 0
 
