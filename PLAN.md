@@ -28,7 +28,7 @@ If time runs out after step 7, you still have a complete game with a start, a mi
 | Screen | 800 × 720 (already set) | |
 | Grid | **Tiles of 40 × 40 px**, so 20 columns × 18 rows | The player sprites (`grafiki/player/`) are 40 × 40 |
 | Map | A **list of strings**, one letter per tile | Edit the level in a text editor, no tools needed |
-| Movement | **One key press = one tile** | Wall collisions become very easy (check the target tile) |
+| Movement | **Smooth, in pixels, while the key is held** | Walls are checked with a small hitbox against the `W` tiles |
 | Code layout | Keep a single `main.py` for now | Easy to read. Split it later only if it gets long |
 | Graphics | Coloured rectangles first, images later | Gameplay first, art second |
 
@@ -143,18 +143,25 @@ LEVEL_1 = [
 
 **Done when:** the maze appears on screen.
 
-### Step 5: Grid movement and walls (≈ 45 min)
-- Store the player position **in tiles** (`player_x`, `player_y`), not in pixels.
-- On a `KEYDOWN` event (not `get_pressed`, which moves too fast), compute the target tile.
-- Move only if the target tile is **not** `W`.
-- Draw the player at `(player_x * 40, player_y * 40)`. Show the player sprite facing the last move direction (`grafiki/player/north.png`, etc.).
+### Step 5: Smooth movement and walls (≈ 45 min)
+- Store the player position **in pixels** (`player_x`, `player_y` = the centre of the player),
+  starting in the middle of the `P` tile.
+- Each frame, read the held keys with `pygame.key.get_pressed()`: the player keeps moving while
+  an arrow key is held (`PLAYER_SPEED` = 3 pixels per frame).
+- Walls: a **hitbox** of 28 × 28 px (a bit smaller than a tile, so corridors are easy) must never
+  touch a `W` tile. Checking its 4 corners is enough: `LEVEL_1[y // 40][x // 40]`.
+- Move one pixel at a time, x and y separately: the player stops right against a wall and slides
+  along it.
+- Draw the player sprite centred on `(player_x, player_y)`, facing the last move direction
+  (`grafiki/player/north.png`, etc.).
 
 **Done when:** the player walks through the corridors and can't go through walls.
 
 ### Step 6: Key and locked door (≈ 30 min)
 - `has_key = False`
-- If the player steps on `K`, set `has_key = True` and stop drawing the key.
-- The door `D` counts as a wall while `has_key` is `False`.
+- If the tile under the player's centre (`player_x // 40`, `player_y // 40`) is `K`, set
+  `has_key = True` and stop drawing the key.
+- The door `D` counts as a wall while `has_key` is `False` (in `hits_wall`).
 - Small HUD at the top: `Key: none` / `Key: found!`
 - Bonus message if the player bumps into the door without the key: "Locked… I need a key."
 
@@ -191,7 +198,7 @@ after each one.
 | G | **Weaving mini-game** | ★★☆ | At the door, press a sequence of arrows shown on screen (↑ → ↓ ←…) to weave the threads. Each correct key adds a coloured thread |
 | H | **Level 2 / dream layers** | ★★☆ | A second map = "a deeper dream". Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` |
 | I | **Moral choice + 2 endings** | ★★☆ | At the door: "Weave the ordered dream" or "Weave a warning dream". One ending reveals the client was a thief, the other that the banker was the criminal… |
-| J | **Smooth movement / animation** | ★★★ | Slide between tiles, 2-frame walking animation |
+| J | **Walking animation** | ★★★ | 2-frame walking animation per direction (movement is already smooth) |
 
 **Recommended order if you have half a day more:** A → B → G → I. They show the theme best for the
 least code.

@@ -61,27 +61,47 @@ def load_sprite(*path_parts):
     # Load a PNG from the grafiki folder, keeping its transparency
     return pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert_alpha()
 
-def calculate_player_movement(keys):
-    speed = 5
+def player_hitbox(x, y):
+    # A box a bit smaller than a tile, so the player slips easily into corridors
+    hitbox = pygame.Rect(0, 0, PLAYER_HITBOX_SIZE, PLAYER_HITBOX_SIZE)
+    hitbox.center = (x, y)
+    return hitbox
+
+def hits_wall(hitbox):
+    # The hitbox is smaller than a tile, so checking its 4 corners is enough
+    # (-1 because right and bottom are the first pixels just outside the box)
+    left, right = hitbox.left, hitbox.right - 1
+    top, bottom = hitbox.top, hitbox.bottom - 1
+    for corner_x, corner_y in [(left, top), (right, top), (left, bottom), (right, bottom)]:
+        if LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "W":
+            return True
+    return False
+
+def move_player(keys):
+    global player_x, player_y, player_direction
     delta_x = 0
     delta_y = 0
 
     if keys[pygame.K_UP]:
-        delta_y -= speed
+        delta_y = -1
+        player_direction = "north"
     if keys[pygame.K_DOWN]:
-        delta_y += speed
+        delta_y = 1
+        player_direction = "south"
     if keys[pygame.K_LEFT]:
-        delta_x -= speed
+        delta_x = -1
+        player_direction = "west"
     if keys[pygame.K_RIGHT]:
-        delta_x += speed
+        delta_x = 1
+        player_direction = "east"
 
-    return delta_x, delta_y
-
-def limit_position(position):
-    x, y = position
-    x = max(0, min(x, SCREEN_WIDTH))
-    y = max(0, min(y, SCREEN_HEIGHT))
-    return [x, y]
+    # Move one pixel at a time, so the player stops right against a wall.
+    # x and y are checked separately: blocked on one side, the player slides along the wall.
+    for _ in range(PLAYER_SPEED):
+        if not hits_wall(player_hitbox(player_x + delta_x, player_y)):
+            player_x += delta_x
+        if not hits_wall(player_hitbox(player_x, player_y + delta_y)):
+            player_y += delta_y
 
 def next_state(current_state):
     # After the last state, go back to the first one
@@ -146,33 +166,12 @@ def draw_transition_screen():
         state = "DUNGEON"
 
 def update_and_draw_dungeon():
-    global player_pos, player_direction
+    # The player keeps moving while an arrow key is held down
+    move_player(pygame.key.get_pressed())
 
-    # --- PLAYER MOVEMENT ---
-    pressed_keys = pygame.key.get_pressed()
-    delta_x, delta_y = calculate_player_movement(pressed_keys)
-
-    player_pos[0] += delta_x
-    player_pos[1] += delta_y
-    player_pos = limit_position(player_pos)
-
-    # --- PLAYER DIRECTION ---
-    # The player keeps facing the last direction when standing still
-    if delta_x > 0:
-        player_direction = "east"
-    elif delta_x < 0:
-        player_direction = "west"
-    elif delta_y < 0:
-        player_direction = "north"
-    elif delta_y > 0:
-        player_direction = "south"
-
-    player_image = player_images[player_direction]
-    player_rect = player_image.get_rect(center=player_pos)
-
-    # --- DRAWING ---
     draw_level(LEVEL_1)
-    screen_surface.blit(player_image, player_rect)
+    player_image = player_images[player_direction]
+    screen_surface.blit(player_image, player_image.get_rect(center=(player_x, player_y)))
 
 def draw_weaving_screen():
     screen_surface.fill((20, 90, 90))
@@ -184,9 +183,13 @@ def draw_win_screen():
 
 # ---------------- PLAYER ----------------
 
-# Start in the middle of the P tile
-start_x, start_y = find_tile(LEVEL_1, "P")
-player_pos = [start_x * TILE_SIZE + TILE_SIZE // 2, start_y * TILE_SIZE + TILE_SIZE // 2]
+PLAYER_SPEED = 3         # pixels per frame (x 60 frames = 180 pixels per second)
+PLAYER_HITBOX_SIZE = 28  # smaller than a tile (40) to move easily in corridors
+
+# The position is in pixels: the centre of the player, starting in the middle of the P tile
+start_column, start_row = find_tile(LEVEL_1, "P")
+player_x = start_column * TILE_SIZE + TILE_SIZE // 2
+player_y = start_row * TILE_SIZE + TILE_SIZE // 2
 player_direction = "south"  # facing the camera at the start
 
 # One picture per direction, made with PixelLab
