@@ -78,6 +78,13 @@ def hits_wall(hitbox):
     for corner_x, corner_y in [(left, top), (right, top), (left, bottom), (right, bottom)]:
         if LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "W":
             return True
+        elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "D":
+            door_try()
+        elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "K":
+            global have_key
+            have_key = True
+            # Remove the key from the level, so it can't be picked up again
+            LEVEL_1[corner_y // TILE_SIZE] = LEVEL_1[corner_y // TILE_SIZE][:corner_x // TILE_SIZE] + "." + LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE + 1:]
     return False
 
 def move_player(keys):
@@ -192,6 +199,9 @@ def draw_win_screen():
     screen_surface.fill((120, 90, 20))
     draw_state_name("WIN")
 
+def door_try():
+        if have_key:
+            draw_weaving_screen()
 # ---------------- TILES ----------------
 
 # Pictures made with PixelLab
@@ -207,6 +217,7 @@ tile_images = {
 
 PLAYER_SPEED = 3         # pixels per frame (x 60 frames = 180 pixels per second)
 PLAYER_HITBOX_SIZE = 28  # smaller than a tile (40) to move easily in corridors
+have_key = False  # the player starts without the key
 
 # The position is in pixels: the centre of the player, starting in the middle of the P tile
 start_column, start_row = find_tile(LEVEL_1, "P")
