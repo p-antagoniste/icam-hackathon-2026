@@ -1,5 +1,4 @@
 import pygame
-import random
 import time
 import os
 
@@ -53,7 +52,6 @@ player_angle = 0  # initial angle
 player = load_image(os.path.join(BASE_DIR, "grafiki", "player.png"), player_pos, transparent_color=None)
 
 
-score = 0
 font = pygame.font.SysFont(None, 36)
 
 # ---------------- GAME LOOP ----------------
