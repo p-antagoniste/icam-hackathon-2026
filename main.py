@@ -12,7 +12,7 @@ SCREEN_HEIGHT = 600
 background_color = [0, 0, 0]
 
 screen_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Dream weaver")
+pygame.display.set_caption("The Dream Weaver")
 clock = pygame.time.Clock()
 
 # ---------------- FUNCTIONS ----------------
