@@ -25,8 +25,29 @@ LEVEL_1 = [
     "W..................W",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
+LEVEL_2 = [
+    "WWWWWWWWWWWWWWWWWWWW",
+    "WP.................W",
+    "W..................W",
+    "W...WWWWWWWWWW..W..W",
+    "W...W........W..W..W",
+    "W...W....W......W..W",
+    "W...WD...W......W..W",
+    "W...WWWWWWWWWWWWWWWW",
+    "W..................W",
+    "W..................W",
+    "WWWWWWWW...WWWWWW..W",
+    "W......W...W....W..W",
+    "W......W...W....W..W",
+    "WK..W..W.....W..W..W",
+    "WWWWW..WWWWWWW..W..W",
+    "W...............W..W",
+    "W...............W.PW",
+    "WWWWWWWWWWWWWWWWWWWW",
+]
+LEVELS = [LEVEL_1, LEVEL_2]
 # A copy of the map as it is at the start: picking up the key changes LEVEL_1
-LEVEL_1_START = list(LEVEL_1)
+
 
 # ---------------- TILES ----------------
 
@@ -49,10 +70,12 @@ def find_tile(level, letter):
                 return x, y
     return None
 
-def reset_level():
+def load_level(number):
+    global LEVEL_1
+    dungeon_map = LEVELS[number]
     # Put the key back for a new game.
     # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
-    LEVEL_1[:] = LEVEL_1_START
+
 
 def draw_level(level):
     for y, row in enumerate(level):
@@ -62,3 +85,8 @@ def draw_level(level):
             screen_surface.blit(floor_image, position)
             if tile in tile_images:
                 screen_surface.blit(tile_images[tile], position)
+
+for row_number, row in enumerate(LEVEL_2):
+    if len(row) != 20:
+        print("row", row_number, "has", len(row), "letters")
+print(len(LEVEL_2), "rows")

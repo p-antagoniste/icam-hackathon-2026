@@ -4,7 +4,7 @@ import pygame
 
 import game
 from window import screen_surface, font, TEXT_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT
-from level import LEVEL_1, draw_level, reset_level
+from level import LEVEL_1, draw_level, load_level
 import player
 from player import move_player, draw_player, reset_player
 from guards import (move_guards, draw_guards, guard_touches_player, player_is_protected,
@@ -168,7 +168,7 @@ def reset_game():
     global dungeon_start, time_lost
     dungeon_start = None
     time_lost = 0
-    reset_level()   # the key is back in the maze
+    load_level(0)   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     reset_guards()  # the guards are back at the start of their route
     loom.reset_loom()  # the weaving song is back at the start
