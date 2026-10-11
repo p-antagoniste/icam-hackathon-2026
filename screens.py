@@ -138,16 +138,16 @@ def draw_message(lines, center_y=SCREEN_HEIGHT // 2):
     for picture, y in pictures:
         screen_surface.blit(picture, (panel.left + MESSAGE_PADDING, panel.top + MESSAGE_PADDING + y))
 
-def draw_state_name(name, color):
-    # A dark shadow under the white text, so it can be read on the threads too
-    center = (SCREEN_WIDTH // 2, 40)
-    shadow = font.render(name, True, (10, 5, 25))
+def draw_label(words, color, center):
+    # A dark shadow under the text, so it can be read on any background
+    shadow = font.render(words, True, (10, 5, 25))
     screen_surface.blit(shadow, shadow.get_rect(center=(center[0] + 2, center[1] + 2)))
-    text = font.render(name, True, color)
+    text = font.render(words, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
 
-def draw_state_name(name):
-    draw_label(name, TEXT_COLOR, (SCREEN_WIDTH // 2, 40))
+def draw_state_name(name, color=TEXT_COLOR):
+    # A text at the top of the screen, white if no color is given
+    draw_label(name, color, (SCREEN_WIDTH // 2, 40))
 
 def reset_game():
     # Everything back to the start, to play again
@@ -172,10 +172,18 @@ def draw_title_screen():
         game.state = "MISSION"
 
 def draw_mission_screen():
-    screen_surface.fill((15, 10, 30))
-    draw_state_name("MISSION", color=(230, 190, 90))
-    textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
-    draw_message(textes)
+    screen_surface.fill(MISSION_BACKGROUND)
+
+    # Who sends the mission on the left, who it is about on the right
+    client_x = SCREEN_WIDTH // 4
+    target_x = SCREEN_WIDTH * 3 // 4
+    screen_surface.blit(client_image, client_image.get_rect(midtop=(client_x, PORTRAIT_TOP)))
+    screen_surface.blit(banks_image, banks_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
+    draw_label("The client: ???", CLIENT_COLOR, (client_x, LABEL_Y))
+    draw_label("The target: Mr. Banks", TARGET_COLOR, (target_x, LABEL_Y))
+
+    textes = ["INCOMING MESSAGE"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","           Make him believe he must transfer","           1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
+    draw_message(textes, center_y=MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         game.state = "TRANSITION"
 
