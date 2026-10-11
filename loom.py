@@ -1,5 +1,6 @@
 import time
 import pygame
+import game
 
 from window import screen_surface, SCREEN_HEIGHT
 from assets import sounds, start_music
@@ -13,10 +14,10 @@ LOOM_MUSIC = "loom_song.mp3"  # made with Suno, in the music folder
 LOOM_BPM = 100            # beats per minute of the music (Suno was asked for 100 BPM)
 STEPS_PER_BEAT = 2        # each letter of the song lasts half a beat
 MUSIC_START = 0.13        # seconds before the first beat of the music (measured with ffmpeg)
-SCROLL_SPEED = 300        # pixels per second: how fast the arrows climb
+      # pixels per second: how fast the arrows climb
 PERFECT_WINDOW = 0.07     # seconds too early or too late that still count as "PERFECT"
-GOOD_WINDOW = 0.16        # ... and as "GOOD". Later than that, the thread is missed
-PASS_PERCENT = 60         # how many threads (in %) must be woven for the dream to hold
+      # ... and as "GOOD". Later than that, the thread is missed
+        # how many threads (in %) must be woven for the dream to hold
 FLASH_DURATION = 0.15     # seconds the grey arrow lights up after a good key
 JUDGEMENT_DURATION = 0.4  # seconds "PERFECT", "GOOD" or "MISS" stays on the screen
 END_PAUSE = 1             # seconds between the last arrow and the result
@@ -26,7 +27,7 @@ RULES_DURATION = 5        # seconds the rules are shown, then the song starts by
 # Change it to make your own dance! (the lines are joined into one long text)
 # Each line is 8 beats of the music (4.8 s). The 1st, 3rd, 5th... letters fall on a beat,
 # the others between two beats. The start of each group of 4 ("L...") is a big drum.
-SONG = (
+SONG_1 = (
     "........L...R..."  # beats 0-8: the soft start of the music
     "L...D...U...R..."  # beats 8-16: the drums start
     "L.R.L.R.U.D.U.D."  # beats 16-24
@@ -35,7 +36,19 @@ SONG = (
     "L.L.R.R.U.U.D.D."  # beats 40-48
     "LDUR.RUDL...L..."  # beats 48-56: the end of the music
 )
-
+SONG_2 = (
+    "....L...R...L.R."  # beats 0-8: the soft start of the music
+    "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
+    "L.R.LDUR.R.L.URD"  # beats 16-24
+    "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
+    "LDUR.RUDL.LDUR.."  # beats 32-40
+    "LR.LR.UD.UD.LDUR"  # beats 40-48
+    "LDURLDURL...L..."  # beats 48-56: the end of the music
+)
+SONGS = [SONG_1, SONG_2]
+SCROLL_SPEEDS = [300, 360] 
+GOOD_WINDOWS = [0.16, 0.14]  # seconds: how long before/after the target time a key press is accepted
+PASS_PERCENTS = [60, 65]    # percentage of notes that must be hit to pass the mission
 # The 4 lanes, in the order of Dance Dance Revolution: left, down, up, right
 LANES = ["L", "D", "U", "R"]
 LANE_KEYS = {"L": pygame.K_LEFT, "D": pygame.K_DOWN, "U": pygame.K_UP, "R": pygame.K_RIGHT}
@@ -72,7 +85,7 @@ def reset_loom():
     lane_flash.clear()
     notes.clear()
     step_duration = 60 / LOOM_BPM / STEPS_PER_BEAT  # seconds between two letters
-    for step, letter in enumerate(SONG):
+    for step, letter in enumerate(SONGS[game.mission_number]):
         if letter in LANES:
             notes.append({"lane": letter, "time": MUSIC_START + step * step_duration, "result": None})
 
@@ -99,14 +112,14 @@ def judge_keys(keys_down):
             # The first arrow of this lane that is close enough to the loom
             for note in notes:
                 gap = abs(note["time"] - now)
-                if note["lane"] == lane and note["result"] is None and gap <= GOOD_WINDOW:
+                if note["lane"] == lane and note["result"] is None and gap <= GOOD_WINDOWS[game.mission_number]:
                     note["result"] = "PERFECT" if gap <= PERFECT_WINDOW else "GOOD"
                     judgement, judgement_time = note["result"], now
                     lane_flash[lane] = now
                     sounds["loom_hit"].play()
                     break
     for note in notes:
-        if note["result"] is None and now - note["time"] > GOOD_WINDOW:
+        if note["result"] is None and now - note["time"] > GOOD_WINDOWS[game.mission_number]:
             note["result"] = "MISS"
             judgement, judgement_time = "MISS", now
             sounds["loom_miss"].play()
@@ -116,10 +129,10 @@ def threads_woven():
 
 def threads_needed():
     # PASS_PERCENT of the threads, rounded up
-    return -(-len(notes) * PASS_PERCENT // 100)
+    return -(-len(notes) * PASS_PERCENTS[game.mission_number] // 100)
 
 def loom_finished():
-    return song_time() > notes[-1]["time"] + GOOD_WINDOW + END_PAUSE
+    return song_time() > notes[-1]["time"] + GOOD_WINDOWS[game.mission_number] + END_PAUSE
 
 def arrow_points(center, lane):
     # An arrow pointing up, made of 7 points around its middle (0, 0)...
@@ -179,7 +192,7 @@ def draw_loom():
 
     # The arrows still to play climb up towards the loom
     for note in notes:
-        y = TARGET_Y + (note["time"] - now) * SCROLL_SPEED
+        y = TARGET_Y + (note["time"] - now) * SCROLL_SPEEDS[game.mission_number]
         if note["result"] is None and y < SCREEN_HEIGHT + ARROW_SIZE:
             draw_arrow((lane_x(note["lane"]), int(y)), note["lane"], LANE_COLORS[note["lane"]])
 
