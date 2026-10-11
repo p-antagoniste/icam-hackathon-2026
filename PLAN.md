@@ -508,6 +508,104 @@ before you see a guard.
 **Done when:** the full game works twice in a row (touched once and still win, then lose because
 of the guards), then commit: `feat: add the guards`.
 
+### Improvement G: The weaving mini-game, step by step
+
+The goal: opening the door doesn't weave the dream by itself any more. The Weaver has to weave it,
+like in **Dance Dance Revolution**: coloured arrows climb up 4 lanes, and when an arrow reaches the
+grey arrows at the top (the *loom*), you press the same arrow key. Each good key weaves one
+coloured thread into the cloth on the right, and a missed key leaves a hole in it. Weave at least
+60% of the threads and the dream holds (WEAVING screen, then the choice 1/2/3). Fewer, and the
+threads break: SPACE to weave again.
+
+```
+ ... DUNGEON --door with the key--> LOOM --enough threads--> WEAVING --> choice 1/2/3 ...
+                                     ^  |
+                                     +--+ not enough threads: SPACE to weave again
+```
+
+Everything is in a new file, `loom.py`, and `draw_loom_screen()` in `screens.py` shows the rules,
+the song and the result.
+
+#### G0: What to create (ElevenLabs and Suno) (done)
+
+The game works without them, but a dance game is much better with sounds.
+
+**Sounds in ElevenLabs (Sound Effects).** Save them in `sound/` with these names. They must be
+**very short**, or they will still be playing when the next arrow arrives:
+
+| File | When | Length | Prompt |
+|---|---|---|---|
+| `loom_hit.mp3` | a good key: a thread is woven | ~0.3 s | `A single soft magical pluck of a harp string with a quick wooden loom shuttle click, bright and dreamy, very short, no reverb tail, no music.` |
+| `loom_miss.mp3` | a missed arrow | ~0.4 s | `A thin thread snapping with a soft dull pop, short and gentle, a little sad but not scary, no music.` |
+
+**Music in Suno (bonus, G5).** The song of the loom, so you dance on a real beat:
+```
+Instrumental, 100 BPM, steady four-on-the-floor beat with a clear kick on every beat,
+dreamy synthwave with harp arpeggios and a soft cinematic pad, mysterious heist mood,
+no vocals, 35 seconds.
+```
+Save it as `music/loom_song.mp3`. The **100 BPM** is important: it must be the same as `LOOM_BPM`
+in `loom.py`, or the arrows won't follow the music.
+
+#### G1: The song and the arrows (done)
+- In `loom.py`, `SONG` is a text with one letter per half beat: `L` left, `D` down, `U` up,
+  `R` right, `.` nothing. `reset_loom()` turns each letter into a dictionary: its lane, the time it
+  must be pressed (in seconds after the start of the song) and its result (`None` = not played yet).
+- `draw_loom()` draws each arrow at `TARGET_Y + (note time - song time) * SCROLL_SPEED`: when its time
+  comes, it is exactly on the loom. A time in the future means lower on the screen.
+
+**Done when:** arrows climb up the 4 lanes and pass over the grey arrows of the loom.
+
+#### G2: Press at the right moment (done)
+- `judge_keys(game.keys_down)` checks the keys pressed *this frame* (like SPACE, so holding a key
+  only counts once). For the right lane, the first arrow less than `GOOD_WINDOW` seconds away from
+  the loom is woven: `"PERFECT"` if it is closer than `PERFECT_WINDOW`, `"GOOD"` otherwise.
+- An arrow more than `GOOD_WINDOW` seconds late is `"MISS"`.
+- `draw_loom_screen()` shows the last result under the loom for `JUDGEMENT_DURATION` seconds,
+  and the grey arrow lights up in colour.
+
+**Done when:** pressing on time says PERFECT, a bit late says GOOD, not at all says MISS.
+
+#### G3: The cloth and the result (done)
+- `draw_cloth()`: the vertical threads (the *warp*) are always there. One horizontal thread per
+  woven arrow, from the bottom up, in the colour of its lane. Over, under, over, under: like on the
+  WEAVING screen, one warp thread out of two goes back on top.
+- When the song is over (`loom_finished()`): with at least `threads_needed()` threads, SPACE goes to
+  WEAVING. Otherwise SPACE plays the song again.
+- `reset_game()` calls `reset_loom()`, so the next game starts with an empty cloth.
+
+**Done when:** you can win the mini-game, lose it and try again, then play a full game twice.
+
+#### G4: The sounds (done)
+- `"loom_hit"` and `"loom_miss"` are in `sounds` in `assets.py`.
+- In `judge_keys()`, `sounds["loom_hit"]` plays next to `lane_flash[lane] = now`, and
+  `sounds["loom_miss"]` next to `note["result"] = "MISS"`.
+
+**Done when:** each good key plucks a string and each miss snaps a thread.
+
+#### G5: Dance on the music (done)
+- `start_music()` in `assets.py` can now play any file of the `music` folder:
+  `start_loom()` plays `loom_song.mp3` once (`loops=0`), at the same time as the arrows start.
+  SPACE on the "dream is woven" message puts the normal music back with `start_music()`.
+- The beat must fall on the arrows. Measured with ffmpeg: the music is exactly 100 BPM and its
+  first beat is at 0.13 s, so `MUSIC_START = 0.13` is added to the time of every note.
+- The music has parts: soft (beats 0 to 8), drums (8 to 24), loud (24 to 54), then it ends.
+  `SONG` has one line per 8 beats, so the dance gets harder when the music gets loud.
+- **If the arrows feel a little early or late** on your computer, change `MUSIC_START` by small
+  steps (0.05): bigger if the music comes after the arrows, smaller if it comes before.
+
+**Done when:** the arrows reach the loom exactly on the beats of the music.
+
+#### G6: Polish (optional, pick what you like)
+- **Harder:** a faster `SCROLL_SPEED`, a smaller `GOOD_WINDOW`, more letters and fewer dots in
+  `SONG`, or `PASS_PERCENT = 80`. Don't change `LOOM_BPM`: it must stay the tempo of the music.
+- **Combo:** count the good keys in a row and show `Combo x12` under the result.
+- **No cheating:** right now, pressing all the keys all the time works quite well! A key pressed
+  with no arrow near the loom could also count as a `"MISS"`.
+- **Score on the WIN screen:** "You wove 37 threads out of 40!"
+
+**Done when:** the full game works twice in a row, then commit: `feat: add the weaving mini-game`.
+
 ### Improvement H: Level 2, a deeper dream, step by step
 
 The goal: like in *Inception*, there is a dream **inside** the dream. When the Weaver opens the

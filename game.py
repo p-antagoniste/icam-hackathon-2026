@@ -1,6 +1,6 @@
 # ---------------- STATES ----------------
 # The game is always on exactly one of these screens, in this order
-STATES = ["TITLE", "MISSION", "TRANSITION", "DUNGEON", "WEAVING", "WAKE_UP", "WIN"]
+STATES = ["TITLE", "MISSION", "TRANSITION", "DUNGEON", "LOOM", "WEAVING", "WAKE_UP", "WIN"]
 
 # The current screen. Other files change it with game.state = "..."
 # Always write "import game" then game.state: "from game import state" would make a copy

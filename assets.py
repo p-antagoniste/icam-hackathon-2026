@@ -38,11 +38,12 @@ def load_sound(name):
     # Load an MP3 from the sound folder
     return pygame.mixer.Sound(os.path.join(BASE_DIR, "sound", name + ".mp3"))
 
-def start_music():
-    # Dreamy background music made with Suno, played on a loop (-1) during the whole game
-    pygame.mixer.music.load(os.path.join(BASE_DIR, "music", "Inception Heist.mp3"))
+def start_music(file_name="Inception Heist.mp3", loops=-1):
+    # Music made with Suno. Without a file name, the dreamy music of the whole game.
+    # loops=-1 plays it again and again, loops=0 only once (the song of the loom)
+    pygame.mixer.music.load(os.path.join(BASE_DIR, "music", file_name))
     pygame.mixer.music.set_volume(0.5)  # 0 = silent, 1 = full volume
-    pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(loops)
 
 # ---------------- SOUNDS ----------------
 
@@ -56,6 +57,8 @@ sounds = {
     "wake_up": load_sound("wake_up"),
     "guard_touch": load_sound("guard_touch"),
     "guard_near": load_sound("guard_near"),
+    "loom_hit": load_sound("loom_hit"),
+    "loom_miss": load_sound("loom_miss"),
 }
 
 # Played once when a screen starts

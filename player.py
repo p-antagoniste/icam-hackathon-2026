@@ -93,7 +93,7 @@ def door_try():
         # The door is touched several times per frame: open it only once
         if game.state == "DUNGEON":
             sounds["door_open"].play()
-            game.state = "WEAVING"
+            game.state = "LOOM"
         return False
     # get_num_channels() is 0 when the sound is not already playing:
     # pushing against the door doesn't start a new thud every frame

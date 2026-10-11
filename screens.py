@@ -10,7 +10,8 @@ from player import move_player, draw_player, reset_player
 from guards import (move_guards, draw_guards, guard_touches_player, player_is_protected,
                     guard_is_near, reset_guards, GUARD_PENALTY)
 from fog import draw_fog
-from assets import load_background, load_picture, sounds
+import loom  # loom.loom_start, not "from loom import loom_start": that copy would never change
+from assets import load_background, load_picture, sounds, start_music
 
 # One function per state, called every frame by the game loop in main.py
 
@@ -170,6 +171,7 @@ def reset_game():
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     reset_guards()  # the guards are back at the start of their route
+    loom.reset_loom()  # the weaving song is back at the start
     weaving_start = None
 
 def draw_title_screen():
@@ -267,6 +269,54 @@ def update_and_draw_dungeon():
         draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
     if time_left <= 0:
         game.state = "WAKE_UP"
+
+def draw_loom_screen():
+    # The weaving mini-game: first the rules, then the song, then the result
+    loom.judge_keys(game.keys_down)
+    loom.draw_loom()
+    draw_state_name("THE LOOM", color=MESSAGE_TITLE_COLOR)
+    draw_label(f"Threads: {loom.threads_woven()} / {len(loom.notes)}", TEXT_COLOR,
+               (loom.CLOTH.centerx, loom.CLOTH.top - 25))
+
+    if loom.loom_start is None:
+        draw_message([
+            "Weave the dream!",
+            "Arrows climb up the loom. When one reaches",
+            "the grey arrows at the top, press the same",
+            "arrow key. Each good key weaves a thread.",
+            f"Weave at least {loom.threads_needed()} threads, or the dream breaks.",
+            "Press SPACE to start weaving.",
+        ])
+        if pygame.K_SPACE in game.keys_down:
+            loom.start_loom()
+        return
+
+    if not loom.loom_finished():
+        # "PERFECT", "GOOD" or "MISS" just under the loom, for a short moment
+        # (nothing at the start of the song, before the first arrow is played)
+        if loom.judgement != "" and loom.song_time() - loom.judgement_time < loom.JUDGEMENT_DURATION:
+            color = {"PERFECT": MESSAGE_TITLE_COLOR, "GOOD": TEXT_COLOR, "MISS": TARGET_COLOR}[loom.judgement]
+            draw_label(loom.judgement, color, (loom.lane_x("D") + loom.LANE_WIDTH // 2, loom.TARGET_Y + 70))
+        return
+
+    if loom.threads_woven() >= loom.threads_needed():
+        draw_message([
+            "The dream is woven!",
+            f"You wove {loom.threads_woven()} threads out of {len(loom.notes)}.",
+            "Press SPACE to see the dream.",
+        ])
+        if pygame.K_SPACE in game.keys_down:
+            start_music()  # back to the dreamy music of the game
+            game.state = "WEAVING"
+    else:
+        draw_message([
+            "The threads broke...",
+            f"Only {loom.threads_woven()} threads: you need {loom.threads_needed()}.",
+            "Press SPACE to weave again.",
+        ])
+        if pygame.K_SPACE in game.keys_down:
+            loom.reset_loom()
+            loom.start_loom()
 
 def thread_rect(direction, index, length):
     # The rectangle of a thread, from the top (vertical) or the left (horizontal) edge

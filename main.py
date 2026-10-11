@@ -9,6 +9,7 @@ from screens import (
     draw_mission_screen,
     draw_transition_screen,
     update_and_draw_dungeon,
+    draw_loom_screen,
     draw_weaving_screen,
     draw_win_screen,
     draw_demo_screen,
@@ -23,6 +24,7 @@ from screens import (
 #   player.py   the player: moving, walls, key and door
 #   guards.py   the guards (projections) walking back and forth in the dungeon
 #   fog.py      the fog of war around the player
+#   loom.py     the weaving mini-game, like Dance Dance Revolution
 #   screens.py  what to draw on each screen
 
 start_music()
@@ -56,6 +58,8 @@ while game_status:
         draw_transition_screen()
     elif game.state == "DUNGEON":
         update_and_draw_dungeon()
+    elif game.state == "LOOM":
+        draw_loom_screen()
     elif game.state == "WEAVING":
         draw_weaving_screen()
     elif game.state == "WIN":

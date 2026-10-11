@@ -35,7 +35,7 @@ Commit messages use the conventional commit format (`feat: ...`, `fix: ...`), wh
 
 ## Architecture
 
-**State machine.** The game is always on exactly one screen, `game.state`. The flow is TITLE → MISSION → TRANSITION (3 s) → DUNGEON → WEAVING (3 s, then choose 1/2/3) → WIN → MISSION. Choices 2 and 3 go to DEMO, and SPACE there goes back to WEAVING. `main.py` runs the loop at 60 FPS and calls one `draw_*_screen()` function from `screens.py` per state. Each screen function switches screens itself by setting `game.state`. To add a screen:
+**State machine.** The game is always on exactly one screen, `game.state`. The flow is TITLE → MISSION → TRANSITION (3 s) → DUNGEON → LOOM (the arrow mini-game in `loom.py`) → WEAVING (3 s, then choose 1/2/3) → WIN → MISSION. Choices 2 and 3 go to DEMO, and SPACE there goes back to WEAVING. `main.py` runs the loop at 60 FPS and calls one `draw_*_screen()` function from `screens.py` per state. Each screen function switches screens itself by setting `game.state`. To add a screen:
 1. add it to `game.STATES`;
 2. write its `draw_*_screen()` in `screens.py`;
 3. add a branch for it in the `if/elif` in `main.py`;
@@ -49,7 +49,7 @@ Commit messages use the conventional commit format (`feat: ...`, `fix: ...`), wh
 
 **Timed screens.** TRANSITION and WEAVING store their start time in a module global that is `None` until the first frame (`transition_start`, `weaving_start`). They compute a 0→1 progress from it, and set it back to `None` (or let `reset_game()` do it) so the next run starts fresh. `weaving_start` is deliberately kept when going WEAVING → DEMO → WEAVING.
 
-**Dungeon.** The map is a list of strings: 20×18 tiles of 40 px (800×720 window). `W` wall, `.` floor, `P` start, `K` key, `D` door. The player position is the pixel center. Movement goes one pixel at a time, x and y separately, with a 28 px hitbox. `player.hits_wall()` also handles picking up the key and touching the door: with the key, touching the door switches to WEAVING. `fog.py` casts rays against `W`/`D` tiles every frame and draws the fog last.
+**Dungeon.** The map is a list of strings: 20×18 tiles of 40 px (800×720 window). `W` wall, `.` floor, `P` start, `K` key, `D` door. The player position is the pixel center. Movement goes one pixel at a time, x and y separately, with a 28 px hitbox. `player.hits_wall()` also handles picking up the key and touching the door: with the key, touching the door switches to LOOM. `fog.py` casts rays against `W`/`D` tiles every frame and draws the fog last.
 
 **Messages.** Use `draw_message(lines)` from `screens.py` for text panels. It picks a font size that fits and wraps long lines. The first line is drawn as a gold title, and the last line (the key to press) blinks.
 
