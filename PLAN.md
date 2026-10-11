@@ -196,7 +196,7 @@ after each one.
 | E | **Memory fragments** | ★★☆ | Use the 3 thread spools (`grafiki/objects/thread_*.png`): collect 3 "threads" before the door opens |
 | F | **Guards (projections)** | ★★☆ | As in *Inception*, the mind defends itself: enemies walk back and forth along a corridor. Touching one costs 20 s: the banker wakes up sooner |
 | G | **Weaving mini-game** | ★★☆ | At the door, press a sequence of arrows shown on screen (↑ → ↓ ←…) to weave the threads. Each correct key adds a coloured thread |
-| H | **Level 2 / dream layers** | ★★☆ | A second map = "a deeper dream". Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` (step by step below) |
+| H | **Mission 2, a new target** | ★★☆ | After the WIN screen, a new mission with a new target, a harder maze and a harder dance on the loom. Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` (step by step below) |
 | I | **Moral choice + 2 endings** | ★★☆ | At the door: "Weave the ordered dream" or "Weave a warning dream". One ending reveals the client was a thief, the other that the banker was the criminal… |
 | J | **Walking animation** | ★★★ | 2-frame walking animation per direction (movement is already smooth) |
 
@@ -606,28 +606,52 @@ in `loom.py`, or the arrows won't follow the music.
 
 **Done when:** the full game works twice in a row, then commit: `feat: add the weaving mini-game`.
 
-### Improvement H: Level 2, a deeper dream, step by step
+### Improvement H: Mission 2, a new target, step by step
 
-The goal: like in *Inception*, there is a dream **inside** the dream. When the Weaver opens the
-door of level 1, there's no weaving yet: Mr. Banks falls into a deeper dream, with a new maze, a
-new key, a new door and new guards. The weaving (and the choice 1/2/3) only comes after the door
-of **level 2**.
+The goal: after the WIN screen, the game isn't over. The anonymous client sends a **new
+mission**, with a **new target**, a new maze (a bit harder), new guards and a new dance on the
+loom (a bit harder too). After the second WIN screen, the game is really over and goes back to
+the title.
 
 ```
- ... DUNGEON (level 1) --door--> DEEPER --SPACE--> TRANSITION --> DUNGEON (level 2) --door--> WEAVING ...
+ MISSION 1 --> TRANSITION --> DUNGEON (maze 1) --> LOOM (dance 1) --> WEAVING --> WIN 1
+                                                                                   |
+     +-------------------------------- SPACE: next mission <-----------------------+
+     v
+ MISSION 2 --> TRANSITION --> DUNGEON (maze 2) --> LOOM (dance 2) --> WEAVING --> WIN 2 --SPACE--> TITLE
 ```
 
-The big idea: the code already plays **one map**. You won't write a second dungeon: you'll teach
-the game to **swap the map** (and the guards) for another one, then play it the same way.
+Thrown out of a dream (WAKE_UP)? SPACE tries **the same mission** again, not mission 1.
+
+**The big idea: one number.** `game.mission_number` is `0` during mission 1 and `1` during
+mission 2 (lists start at 0). Everything that is different in mission 2 becomes a **list with
+one value per mission**, and the code takes the value of the mission being played:
+`DREAM_TIMES[game.mission_number]`. You already know the trick: the guards in `GUARD_ROUTES`
+and the threads in `THREAD_COLORS` are lists too.
+
+What changes from one mission to the other (the ideas for mission 2 are only suggestions, the
+story is yours!):
+
+| | Mission 1 | Mission 2 |
+|---|---|---|
+| Target | Mr. Banks, senior banker | **Inspector Grey**, the police detective looking for the 1,000,000 € |
+| What to weave | "transfer 1,000,000 € to account FR76 ... 0042" | "the case is closed, there is no thief" |
+| The dream | Mr. Banks's house | The police station: an archive full of case files |
+| Maze | `LEVEL_1` | `LEVEL_2`: longer, narrower, more dead ends |
+| Guards | 3, walking left and right | 4, one walking up and down |
+| Dream time | 60 s | 75 s (the maze is bigger) |
+| Loom | `SONG_1`, 300 px/s, ±0.16 s, 60% | `SONG_2` (more arrows between the beats), 360 px/s, ±0.14 s, 65% |
+| Ending | the choice 1/2/3 | one ending, then THE END |
 
 This time the steps say *what* to do and give hints, but not the full code: you've already done
-all the tricks in improvements C and F. When you're stuck, look for the same idea in the code
+all the tricks in improvements C, F and G. When you're stuck, look for the same idea in the code
 that already works. Same as before: don't move on before **"Done when…"** passes, and commit
 after each step.
 
-#### H0: Imagine level 2 (≈ 30 min, on paper)
-- **The story:** where is the Weaver now? An idea: level 1 is Mr. Banks's house, level 2 is
-  **the bank vault in his dream**, where the idea of the transfer must be planted.
+#### H0: Imagine mission 2 (≈ 30 min, on paper)
+- **The story:** who is the target, and why does the client want this dream? The idea above
+  follows mission 1: someone emptied Mr. Banks's account, and Inspector Grey is looking for who
+  did it. If she believes the case is closed, nobody will find the Weaver (or the client).
 - **The map:** draw it on squared paper, 20 columns × 18 rows, with the same letters as level 1
   (`W` `.` `P` `K` `D`). The rules:
   - The **whole border is `W`**. That's not only for the look: the fog and the walls read the
@@ -635,29 +659,59 @@ after each step.
   - Exactly **one** `P`, one `K` and one `D`.
   - Every row has **exactly 20 letters**, and there are **exactly 18 rows**.
   - Make sure you can walk from `P` to `K`, then from `K` to `D` (follow it with a pencil!).
-  - Level 2 should be a bit harder than level 1: longer, with more dead ends.
+- **A bit harder, not much harder.** Some ideas, pick 2 or 3:
+  - a longer path: put `P`, `K` and `D` in 3 different corners;
+  - more dead ends (in the fog, you only see them when you're inside);
+  - a few corridors only 1 tile wide: the fog makes them scary (but no guard in them, see below);
+  - a key hidden at the end of a dead end, behind a turn.
 - **The guards:** on the same paper, draw their routes like in the table of improvement F (one
   number per guard). A route is a **straight line** (one row, or one column: guards can now walk
-  up and down too!), only on floor tiles, and there must always be a safe place to wait next to it.
+  up and down too!), only on floor tiles. **Never put a guard in a corridor 1 tile wide**: there
+  would be no place to let it go by, so it would always touch you. There must always be a safe
+  place to wait next to a route (a side passage, a corner, a room).
 
 **Done when:** the map and the guard routes are on paper, and someone else (not the one who drew
 it) managed to follow the path from `P` to `K` to `D` with a finger.
 
-#### H1: One map that can change (≈ 30 min)
+#### H1: What to create (Gemini, and PixelLab as a bonus)
+
+Start the pictures now: they are only needed in H5. To get the same style as mission 1, **give
+Gemini the old picture with the prompt** ("in the same style as this picture").
+
+| File in `grafiki/` | Give Gemini | Prompt |
+|---|---|---|
+| `inspector_grey.jpeg` (square) | `mr_banks.jpeg` | `In exactly the same pixel art style as this picture: a polaroid photo held by a paperclip, slightly tilted, on a very dark navy blue background. In the photo: Inspector Grey, a police detective in her fifties, short silver hair, sharp clever eyes, a beige trench coat, holding a small notebook, in a police office with a board of photos linked by red strings behind her. A red marker circle is drawn around her face.` |
+| `win_screen_2.jpeg` (landscape) | `win_screen.jpeg` | `In exactly the same pixel art style as this picture: the next morning, Inspector Grey smiles at her desk and puts a big red stamp "CASE CLOSED" on a file. Glowing dream threads (gold, cyan and red) float around her head. On an old computer screen, a small cyan silhouette of a man with a hat. The bottom quarter of the picture is dark and simple, with nothing important in it.` |
+
+The bottom of `win_screen_2.jpeg` must stay empty: the message panel goes there, like on the WIN
+screen of mission 1.
+
+**Bonus, the tiles of the police station in PixelLab** (40 × 40, top-down, the same settings as
+the tiles of level 1):
+- `grafiki/tiles/floor_2.png`: `top-down pixel art floor tile, old police station, worn dark
+  wooden floorboards, dreamy purple light`
+- `grafiki/tiles/wall_2.png`: `top-down pixel art wall tile, a tall grey metal filing cabinet
+  full of case files, seen from above, dreamy purple light`
+
+No new sound is needed. The loom can use the same music: dance 2 is written on the same beats
+(see H7).
+
+**Done when:** the pictures are in `grafiki/` (they're used in H5 and H8).
+
+#### H2: One map that can change (≈ 30 min)
 Today `LEVEL_1` is both *the map of level 1* and *the map being played* (picking up the key
 rewrites a row of it). With 2 levels, that has to be 2 different things:
 - `LEVEL_1` (and soon `LEVEL_2`) = the map **as it is at the start**. It never changes.
 - `dungeon_map` = the map **being played now**. This one changes: the key disappears from it,
-  and it becomes level 2 when you go deeper.
+  and it becomes the map of level 2 during mission 2.
 
 In `level.py`:
 - Keep `LEVEL_1`, but remove `LEVEL_1_START` (it was a copy of the start map: `LEVEL_1` is now
   that start map).
-- Add `LEVELS = [LEVEL_1]` (the list of all the levels, in order), `level_number = 0` (0 = the
-  first level, because lists start at 0) and `dungeon_map = list(LEVEL_1)`.
-- Replace `reset_level()` by `load_level(number)`: it remembers `number` in `level_number` (don't
-  forget the `global` line) and copies `LEVELS[number]` into `dungeon_map`. Look at how
-  `reset_level()` does it: with `[:]`, to change the list itself and not make a new one.
+- Add `LEVELS = [LEVEL_1]` (the list of all the levels, one per mission) and
+  `dungeon_map = list(LEVEL_1)`.
+- Replace `reset_level()` by `load_level(number)`: it copies `LEVELS[number]` into `dungeon_map`.
+  Look at how `reset_level()` does it: with `[:]`, to change the list itself and not make a new one.
 
 Then use `dungeon_map` everywhere `LEVEL_1` was used to *play*: in `player.py`, `fog.py` and
 `screens.py`. **Tip:** in VS Code, `Cmd + Shift + F` and search `LEVEL_1` to find them all.
@@ -670,7 +724,7 @@ In `screens.py`, `reset_game()` now calls `load_level(0)` instead of `reset_leve
 Nothing new on screen: that's normal, and it's the hardest step! Commit:
 `refactor: separate the start map from the map being played`.
 
-#### H2: Type in the map of level 2 (≈ 30 min)
+#### H3: Type in the map of level 2 (≈ 30 min)
 - In `level.py`, type your paper map as `LEVEL_2`, under `LEVEL_1`, and add it to `LEVELS`.
 - **Check the size:** a missing letter is very hard to see. Put this at the bottom of
   `level.py` for a moment, it prints the rows that are wrong:
@@ -680,85 +734,134 @@ Nothing new on screen: that's normal, and it's the hardest step! Commit:
           print("row", row_number, "has", len(row), "letters")
   print(len(LEVEL_2), "rows")
   ```
-- **To see it in the game** without playing level 1 first: for a moment, write
+- **To see it in the game** without playing mission 1 first: for a moment, write
   `dungeon_map = list(LEVEL_2)` instead of `list(LEVEL_1)`. The guards of level 1 will walk at
-  strange places (maybe through walls): don't worry, H4 fixes that.
+  strange places (maybe through walls): don't worry, H6 fixes that.
 
 **Done when:** the game starts on level 2, the player is on `P`, you can take the key and open the
 door. Then put back `list(LEVEL_1)`, remove the `print` lines, and commit.
 
-#### H3: The DEEPER screen (≈ 45 min)
-A new screen, between the two levels. You did it for WAKE_UP: follow the 4 steps from
-`CLAUDE.md` (section *Architecture*).
-1. Add `"DEEPER"` to `STATES` in `game.py`.
-2. In `screens.py`, write `draw_deeper_screen()`: a background colour (or a picture), and a
-   `draw_message([...])`, for example:
-   ```
-   The door opens on a staircase...
-   Mr. Banks falls into a deeper dream.
-   Press SPACE to follow him.
-   ```
-   When SPACE is pressed, start level 2, then `game.state = "TRANSITION"`.
-3. In `main.py`, import it and add its `elif`.
-4. (Optional) A sound when it starts, in `SCREEN_SOUNDS`.
+#### H4: The mission number (≈ 45 min)
+- In `game.py`, next to `state`, add `mission_number = 0`. Like `game.state`, always write
+  `game.mission_number`, never `from game import mission_number`: that copy would stay at 0
+  forever.
+- **`reset_game()` prepares the mission being played.** It already puts everything back at the
+  start. Now it must use `game.mission_number`: `load_level(game.mission_number)` instead of
+  `load_level(0)`, and later (H6, H7) the guards and the loom of that mission too.
+  - **The order matters:** `reset_player()` looks for the `P` in `dungeon_map`. Which one must
+    come first, `load_level(...)` or `reset_player()`?
+- **The WIN screen goes to the next mission.** Today, each of the 3 endings of
+  `draw_win_screen()` has the same lines for SPACE. Write them only once, at the end of the
+  function, and change them:
+  - if this is **not** the last mission, add 1 to `game.mission_number`, call `reset_game()`, and
+    go to `"MISSION"`;
+  - if it **is** the last mission, put `game.mission_number` back to `0`, call `reset_game()`,
+    and go to `"TITLE"`: the game is over.
+  - How do you know it's the last mission? `game.mission_number` is `0` or `1`, and
+    `len(LEVELS)` is `2` (`from level import LEVELS`).
+  - Change the last line of the messages: `"Press SPACE for the next mission."`
+- **WAKE_UP needs nothing new:** it calls `reset_game()`, which now prepares the same mission
+  again. Check it!
+- **The door needs nothing new either:** with the key, it always goes to the loom.
 
-**Starting a level** needs a lot of resets: the map, the player on the new `P` without the key,
-the guards, and a full timer (`dungeon_start` and `time_lost`). `reset_game()` already does
-almost all of it! Write a new function `start_level(number)` in `screens.py` with that part,
-and make `reset_game()` call `start_level(0)`.
-- **The order matters:** `reset_player()` looks for the `P` in `dungeon_map`. Which one must
-  come first, `load_level(...)` or `reset_player()`?
+**Done when:** after WIN, SPACE shows the MISSION screen (still the text of Mr. Banks: that's H5),
+the transition, and the maze of level 2. After the second WIN, SPACE goes back to the title, and
+a new game starts on level 1. Losing on level 2 tries level 2 again.
 
-**The door now has 2 jobs.** In `door_try()` (`player.py`), with the key:
-- if this is **not** the last level, go to `"DEEPER"`;
-- if it **is** the last level, go to `"WEAVING"` like before.
-- How do you know it's the last level? `level_number` is `0` or `1`, and `len(LEVELS)` is `2`.
-- `level_number` changes during the game, so `import level` and write `level.level_number`,
-  never `from level import level_number`: that would be a copy that stays at 0 forever.
+#### H5: The screens of mission 2 (≈ 45 min)
+Now the screens must tell the story of the mission being played. In `screens.py`, near the
+pictures at the top:
+- **MISSION:** one value per mission, in lists. For example
+  `TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]`, `target_images = [banks_image, inspector_image]`
+  (load `inspector_grey.jpeg` like `mr_banks.jpeg`) and `MISSION_TEXTS = [[...], [...]]` (the
+  lines of `draw_message`, one list of lines per mission). `draw_mission_screen()` then uses
+  `[game.mission_number]` everywhere it used Mr. Banks. The client stays the same picture: it's
+  always the same mysterious client!
+- **TRANSITION:** `"Entering the dream of Mr. Banks..."` must use the name of the target too.
+- **WEAVING:** the choice 1/2/3 is about the transfer, so it only makes sense in mission 1. In
+  mission 2, when the threads are woven, show `"The dream is woven. Press SPACE."`, and SPACE goes
+  to WIN.
+- **WIN:** in mission 2, show `win_screen_2.jpeg` and its own message, for example:
+  ```
+  Case closed.
+  Inspector Grey stopped looking for the thief...
+  Press SPACE to finish the game.
+  ```
+  **Tip:** at the start of `draw_win_screen()`, `if game.mission_number == 1:` draws the ending of
+  mission 2, and `else:` keeps the 3 endings of mission 1 as they are.
 
-**Done when:** level 1's door shows the DEEPER screen, SPACE plays the transition, then level 2
-starts with the player on its `P`, a key, and a full timer. Level 2's door goes to WEAVING. After
-the WIN screen, SPACE goes back to **level 1**.
+**Done when:** the whole story of mission 2 is right (mission, transition, weaving, win), and
+mission 1 still looks exactly like before.
 
-#### H4: The guards of level 2 (≈ 30 min)
-Right now every level has the guards of level 1. Each level needs its own list of routes.
+#### H6: The guards of mission 2 (≈ 30 min)
+Right now the maze of level 2 has the guards of level 1. Each level needs its own list of routes.
 - In `guards.py`, turn `GUARD_ROUTES` into a **list of lists**: one list of routes per level,
   in the same order as `LEVELS`:
   ```python
   GUARD_ROUTES = [
       [ ... the 3 routes of level 1, as today ... ],
-      [ ... the routes of level 2, from your paper ... ],
+      [ ... the 4 routes of level 2, from your paper ... ],
   ]
   ```
-- In `reset_guards()`, only take the routes of the level being played:
-  `GUARD_ROUTES[level.level_number]` (the same `import level` trick as in H3).
+- In `reset_guards()`, only take the routes of the mission being played:
+  `GUARD_ROUTES[game.mission_number]` (with `import game` at the top).
 - **Vertical routes work already:** `move_guards()` handles north and south, and the guard
   pictures exist for the 4 directions. Only one small thing: a new guard starts facing `"east"`.
   For a vertical route that's wrong during the first steps. Can you fix it? (Hint: compare the
   rows of `start` and `end`.)
-- To check a route: walk straight into the guard, it should take 20 s.
+- To check a route: walk straight into the guard, it should take 15 s.
 
 **Done when:** level 1 has its 3 guards like before, level 2 has its own guards on their paper
-routes, and after losing on level 2 (WAKE_UP), the next game has the guards of level 1 again.
+routes, and nobody walks through a wall.
 
-#### H5: Make it feel deeper (optional, pick what you like)
-- **Show the level:** `"Level 2"` somewhere on the screen of the dungeon, with `draw_label(...)`
-  (after the fog, or the fog hides it!).
-- **The right transition text:** `"Entering the dream of Mr. Banks..."` for level 1, and
-  `"Going deeper into the dream..."` for level 2 (use `level.level_number`).
-- **More time for a bigger maze:** `Dream_time` can become a list, `[60, 90]`, one per level.
-- **Harder guards:** a speed per level (`GUARD_SPEEDS = [2, 3]`), or more guards.
-- **Try again from level 2:** losing on level 2 sends you back to level 1. Kinder: the WAKE_UP
-  screen could call `start_level(level.level_number)` and go to TRANSITION, so you try level 2
-  again (but then, how do you go back to the MISSION screen?).
-- **New pictures for level 2:** a vault floor and vault walls made in PixelLab (40 × 40, the same
-  settings as the level 1 tiles), for example *"top-down pixel art tile, floor of a golden bank
-  vault, dreamy purple light"*. Save them as `grafiki/tiles/floor_2.png` and `wall_2.png`, then
-  `draw_level()` picks the pictures of the level being played.
-- **Docs:** update the screen flow in `CLAUDE.md` (TITLE → MISSION → ...) with the DEEPER screen.
+#### H7: A harder loom (≈ 30 min)
+Same trick in `loom.py` (with `import game` at the top):
+- Rename `SONG` to `SONG_1`, and add `SONG_2` under it. Same music, same beats, so it uses the
+  same `MUSIC_START`. It's harder because more arrows fall **between** the beats (the letters
+  2, 4, 6...) and there are fewer dots. Here is one, change it as you like:
+  ```python
+  SONG_2 = (
+      "....L...R...L.R."  # beats 0-8: the soft start of the music
+      "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
+      "L.R.LDUR.R.L.URD"  # beats 16-24
+      "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
+      "LDUR.RUDL.LDUR.."  # beats 32-40
+      "LR.LR.UD.UD.LDUR"  # beats 40-48
+      "LDURLDURL...L..."  # beats 48-56: the end of the music
+  )
+  ```
+  Each line must keep **exactly 16 letters**, or the arrows stop following the music.
+- Then one value per mission: `SONGS = [SONG_1, SONG_2]`, `SCROLL_SPEEDS = [300, 360]`,
+  `GOOD_WINDOWS = [0.16, 0.14]` and `PASS_PERCENTS = [60, 65]`. Replace each old constant in the
+  code by its list with `[game.mission_number]` (for example `GOOD_WINDOWS[game.mission_number]`
+  instead of `GOOD_WINDOW`). **Tip:** `Cmd + F` on the old name finds them all.
+- `PERFECT_WINDOW` can stay the same for both missions: it's only for the pride!
+- `reset_game()` already calls `loom.reset_loom()`, so the notes of the right song are made at the
+  start of each mission.
 
-**Done when:** you can play the full game twice in a row: level 1, DEEPER, level 2, weaving, win,
-and once losing on level 2. Then commit: `feat: add level 2, a deeper dream`.
+**Done when:** the loom of mission 2 has more arrows, faster, and asks for more threads (the rules
+panel shows the right number), and the loom of mission 1 is the same as before.
+
+#### H8: Polish (optional, pick what you like)
+- **More time for a bigger maze:** `Dream_time` becomes `DREAM_TIMES = [60, 75]`, one per mission.
+- **Harder guards:** a speed per mission (`GUARD_SPEEDS = [2, 3]`). Careful: a speed that doesn't
+  divide the length of a route still works, thanks to the `<= GUARD_SPEED` in `move_guards()`.
+- **Show the mission:** `"Mission 2"` at the top of the MISSION screen, or in a corner of the
+  dungeon with `draw_label(...)` (after the fog, or the fog hides it!).
+- **The tiles of the police station:** `draw_level()` picks `floor_2.png` and `wall_2.png` during
+  mission 2 (lists again: `floor_images = [..., ...]`).
+- **The story follows your choice:** the mission 2 text can change with the ending of mission 1
+  (`THE_VICTORY_NUMBER`). Ending 3 ("he gives you another chance") is a good start for it:
+  `"This is your last chance, Weaver."`
+- **A choice in mission 2 too**, with its own endings (and their pictures).
+- **A new song for the loom:** a second Suno song, with its own `LOOM_BPM` and `MUSIC_START` (lists
+  again). Measure its first beat with ffmpeg, like for the first one (see the commit
+  `feat: add the weaving mini-game`).
+- **Docs:** update the screen flow in `CLAUDE.md` (TITLE → MISSION → ...) with mission 2.
+
+**Done when:** you can play the whole game twice in a row: mission 1, mission 2, the end, and
+once losing in mission 2 then winning it on the second try. Then commit:
+`feat: add mission 2 with a new target`.
 
 ---
 
