@@ -233,6 +233,8 @@ def update_and_draw_dungeon():
         draw_state_name(f'Time left: {int(time_left)}', color=(255, 0, 0))
     else:
         draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
+    if time_left <= 0:
+        game.state = "WAKE_UP"
 
 def thread_rect(direction, index, length):
     # The rectangle of a thread, from the top (vertical) or the left (horizontal) edge
@@ -301,11 +303,10 @@ def draw_weaving_screen():
         game.state = "DEMO"
 
 def draw_wake_up_screen():
-    screen_surface.blit(win_image, (0, 0))
     draw_message([
-        "Mission complete.",
-        "Mr. Banks made a very generous transfer...",
-        "Press SPACE to play again.",
+        "Mr. Banks woke up!",
+        "You were thrown out of his dream.",
+        "Press SPACE to try again."
     ], center_y=WIN_MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         reset_game()
