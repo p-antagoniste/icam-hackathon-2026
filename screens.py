@@ -8,8 +8,13 @@ from level import LEVEL_1, draw_level, reset_level
 import player
 from player import move_player, draw_player, reset_player
 from fog import draw_fog
+from assets import load_background
 
 # One function per state, called every frame by the game loop in main.py
+
+# ---------------- TITLE ----------------
+# Made with Gemini: the bottom of the picture is left empty for the "Press SPACE" text
+title_image = load_background("title_screen.jpeg")
 
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
@@ -127,6 +132,21 @@ def reset_game():
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     weaving_start = None
+
+def draw_title_screen():
+    screen_surface.blit(title_image, (0, 0))
+
+    # "Press SPACE to start" slowly blinks (between 55% and 100% bright), with a dark shadow
+    brightness = 0.775 + 0.225 * math.sin(time.time() * 4)
+    color = [int(c * brightness) for c in MESSAGE_TITLE_COLOR]
+    center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 45)
+    shadow = font.render("Press SPACE to start", True, (10, 5, 25))
+    screen_surface.blit(shadow, shadow.get_rect(center=(center[0] + 2, center[1] + 2)))
+    text = font.render("Press SPACE to start", True, color)
+    screen_surface.blit(text, text.get_rect(center=center))
+
+    if pygame.K_SPACE in game.keys_down:
+        game.state = "MISSION"
 
 def draw_mission_screen():
     screen_surface.fill((15, 10, 30))

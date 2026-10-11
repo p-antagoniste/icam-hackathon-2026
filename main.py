@@ -5,6 +5,7 @@ import game
 from window import clock
 from assets import sounds, SCREEN_SOUNDS, start_music
 from screens import (
+    draw_title_screen,
     draw_mission_screen,
     draw_transition_screen,
     update_and_draw_dungeon,
@@ -45,7 +46,9 @@ while game_status:
             sounds[SCREEN_SOUNDS[game.state]].play()
         previous_state = game.state
 
-    if game.state == "MISSION":
+    if game.state == "TITLE":
+        draw_title_screen()
+    elif game.state == "MISSION":
         draw_mission_screen()
     elif game.state == "TRANSITION":
         draw_transition_screen()
