@@ -24,13 +24,17 @@ GUARD_HEAR_DISTANCE = 200  # pixels: closer than this, the whispers of a guard c
 # Row 10.5 means "between row 10 and row 11": the guard walks on the line between the two
 # rows, so it blocks a corridor 2 tiles wide and you must wait for the right moment
 GUARD_ROUTES = [
-    [((4, 1.5), (14, 1.5)),         # top corridor: the easy one, pass on row 1
-    ((11, 10.5), (18, 10.5)),  # big room before the door: blocks rows 10 and 11
-    ((4, 15.5), (15, 15.5)),],   # bottom corridor to the key: blocks rows 15 and 16
-    [((1, 15.5), (15, 15.5)),         # top corridor: the easy one, pass on row 1
-    ((1, 8.5), (19, 8.5)),  # big room before the door: blocks rows 10 and 11
-    ((15, 1), (15, 6)),
-    ((6, 1.5), (19, 1.5)),]
+    [   # mission 1
+        ((5, 1.5), (14, 1.5)),     # top corridor: blocks rows 1 and 2
+        ((11, 10.5), (18, 10.5)),  # big room before the door: blocks rows 10 and 11
+        ((4, 15.5), (15, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+    ],
+    [   # mission 2
+        ((1, 15.5), (15, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+        ((1, 8.5), (18, 8.5)),     # middle corridor: blocks rows 8 and 9
+        ((15, 1), (15, 6)),        # up and down in the room next to the door
+        ((6, 1.5), (18, 1.5)),     # top corridor to the door: blocks rows 1 and 2
+    ],
 ]
 
 # One dictionary per guard, filled by reset_guards() below
