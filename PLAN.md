@@ -608,10 +608,9 @@ in `loom.py`, or the arrows won't follow the music.
 
 ### Improvement H: Mission 2, a new target, step by step
 
-The goal: after the WIN screen, the game isn't over. The anonymous client sends a **new
+**The goal:** after the WIN screen, the game isn't over. The anonymous client sends a **second
 mission**, with a **new target**, a new maze (a bit harder), new guards and a new dance on the
-loom (a bit harder too). After the second WIN screen, the game is really over and goes back to
-the title.
+loom (a bit harder too). After the second WIN screen, the game is over and goes back to the title.
 
 ```
  MISSION 1 --> TRANSITION --> DUNGEON (maze 1) --> LOOM (dance 1) --> WEAVING --> WIN 1
@@ -621,247 +620,510 @@ the title.
  MISSION 2 --> TRANSITION --> DUNGEON (maze 2) --> LOOM (dance 2) --> WEAVING --> WIN 2 --SPACE--> TITLE
 ```
 
-Thrown out of a dream (WAKE_UP)? SPACE tries **the same mission** again, not mission 1.
+If Inspector Grey wakes up (WAKE_UP screen), SPACE tries **mission 2 again**, not mission 1.
 
-**The big idea: one number.** `game.mission_number` is `0` during mission 1 and `1` during
-mission 2 (lists start at 0). Everything that is different in mission 2 becomes a **list with
-one value per mission**, and the code takes the value of the mission being played:
-`DREAM_TIMES[game.mission_number]`. You already know the trick: the guards in `GUARD_ROUTES`
-and the threads in `THREAD_COLORS` are lists too.
-
-What changes from one mission to the other (the ideas for mission 2 are only suggestions, the
-story is yours!):
+What is different in mission 2 (the story is only an idea: change it if you like!):
 
 | | Mission 1 | Mission 2 |
 |---|---|---|
 | Target | Mr. Banks, senior banker | **Inspector Grey**, the police detective looking for the 1,000,000 € |
 | What to weave | "transfer 1,000,000 € to account FR76 ... 0042" | "the case is closed, there is no thief" |
 | The dream | Mr. Banks's house | The police station: an archive full of case files |
-| Maze | `LEVEL_1` | `LEVEL_2`: longer, narrower, more dead ends |
+| Maze | `LEVEL_1` | `LEVEL_2`: longer, more dead ends |
 | Guards | 3, walking left and right | 4, one walking up and down |
-| Dream time | 60 s | 75 s (the maze is bigger) |
-| Loom | `SONG_1`, 300 px/s, ±0.16 s, 60% | `SONG_2` (more arrows between the beats), 360 px/s, ±0.14 s, 65% |
+| Loom | 47 arrows, need 60% | 69 arrows, a bit faster, need 65% |
 | Ending | the choice 1/2/3 | one ending, then THE END |
 
-This time the steps say *what* to do and give hints, but not the full code: you've already done
-all the tricks in improvements C, F and G. When you're stuck, look for the same idea in the code
-that already works. Same as before: don't move on before **"Done when…"** passes, and commit
-after each step.
+#### Before you start: the trick of this whole improvement
+
+The game needs to know which mission is being played. That's **one number**:
+`game.mission_number`. It is `0` during mission 1 and `1` during mission 2 (in Python, lists
+start at 0, so the first mission is number 0).
+
+Everything that is different in mission 2 becomes a **list with 2 values**: the value for
+mission 1, then the value for mission 2. And the code takes the right one with
+`[game.mission_number]`:
+
+```python
+TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]
+
+TARGET_NAMES[0]                    # "Mr. Banks"
+TARGET_NAMES[1]                    # "Inspector Grey"
+TARGET_NAMES[game.mission_number]  # the name of the target of the mission being played
+```
+
+That's it! Each step below uses this trick on a different part of the game.
+
+**How the steps work.** Each step says which file to open, what to find in it, and what to write
+instead. Do the steps in order, test after each one, and commit when the test works. Three useful
+keys in VS Code:
+- `Cmd + F`: find a word in the open file;
+- `Cmd + Option + F`: find a word **and replace it** in the open file ("Replace All" changes them
+  all at once);
+- `Cmd + Shift + F`: find a word in **all the files** of the game.
 
 #### H0: Imagine mission 2 (≈ 30 min, on paper)
-- **The story:** who is the target, and why does the client want this dream? The idea above
-  follows mission 1: someone emptied Mr. Banks's account, and Inspector Grey is looking for who
-  did it. If she believes the case is closed, nobody will find the Weaver (or the client).
-- **The map:** draw it on squared paper, 20 columns × 18 rows, with the same letters as level 1
-  (`W` `.` `P` `K` `D`). The rules:
-  - The **whole border is `W`**. That's not only for the look: the fog and the walls read the
-    tile next to the player, and outside the map there is no tile, so the game would crash.
-  - Exactly **one** `P`, one `K` and one `D`.
-  - Every row has **exactly 20 letters**, and there are **exactly 18 rows**.
-  - Make sure you can walk from `P` to `K`, then from `K` to `D` (follow it with a pencil!).
-- **A bit harder, not much harder.** Some ideas, pick 2 or 3:
-  - a longer path: put `P`, `K` and `D` in 3 different corners;
-  - more dead ends (in the fog, you only see them when you're inside);
-  - a few corridors only 1 tile wide: the fog makes them scary (but no guard in them, see below);
-  - a key hidden at the end of a dead end, behind a turn.
-- **The guards:** on the same paper, draw their routes like in the table of improvement F (one
-  number per guard). A route is a **straight line** (one row, or one column: guards can now walk
-  up and down too!), only on floor tiles. **Never put a guard in a corridor 1 tile wide**: there
-  would be no place to let it go by, so it would always touch you. There must always be a safe
-  place to wait next to a route (a side passage, a corner, a room).
 
-**Done when:** the map and the guard routes are on paper, and someone else (not the one who drew
-it) managed to follow the path from `P` to `K` to `D` with a finger.
+**Goal:** the story, the map of level 2 and where its guards walk, all on paper.
 
-#### H1: What to create (Gemini, and PixelLab as a bonus)
+1. **The story.** Who is the target, and why does the client want this dream? The idea above
+   follows mission 1: someone took the money of Mr. Banks, and Inspector Grey is looking for who
+   did it. If she believes the case is closed, nobody will ever find the Weaver.
+2. **The map.** On squared paper, draw a rectangle of **20 squares wide and 18 squares high**.
+   Each square is one tile: `W` wall, `.` floor, `P` start, `K` key, `D` door. Check these rules:
+   - [ ] the **whole border is `W`** (otherwise the game crashes when you walk to the edge);
+   - [ ] there is exactly **one** `P`, **one** `K` and **one** `D`;
+   - [ ] you can walk from `P` to `K`, then from `K` to `D` (follow it with a pencil!).
+3. **A bit harder, not much harder.** Pick 2 or 3 of these ideas:
+   - put `P`, `K` and `D` in 3 different corners, so the path is longer;
+   - add dead ends (in the fog, you only see them once you're inside);
+   - add a few corridors only 1 tile wide (scary in the fog);
+   - hide the key at the end of a dead end, behind a turn.
+4. **The guards.** Draw 4 guard routes on the map, like in the table of improvement F (write the
+   number of the guard on each tile it walks on). A route is a **straight line**: on one row
+   (left and right) or on one column (up and down). Check:
+   - [ ] the route is only on floor tiles, never through a wall;
+   - [ ] **no guard in a corridor 1 tile wide**: you couldn't let it go by, it would always touch you;
+   - [ ] next to each route there is a safe place to wait (a side passage, a corner, a room).
 
-Start the pictures now: they are only needed in H5. To get the same style as mission 1, **give
-Gemini the old picture with the prompt** ("in the same style as this picture").
+**Done when:** everything is on paper, and someone else (not the one who drew it) can follow the
+path from `P` to `K` to `D` with a finger.
 
-| File in `grafiki/` | Give Gemini | Prompt |
-|---|---|---|
-| `inspector_grey.jpeg` (square) | `mr_banks.jpeg` | `In exactly the same pixel art style as this picture: a polaroid photo held by a paperclip, slightly tilted, on a very dark navy blue background. In the photo: Inspector Grey, a police detective in her fifties, short silver hair, sharp clever eyes, a beige trench coat, holding a small notebook, in a police office with a board of photos linked by red strings behind her. A red marker circle is drawn around her face.` |
-| `win_screen_2.jpeg` (landscape) | `win_screen.jpeg` | `In exactly the same pixel art style as this picture: the next morning, Inspector Grey smiles at her desk and puts a big red stamp "CASE CLOSED" on a file. Glowing dream threads (gold, cyan and red) float around her head. On an old computer screen, a small cyan silhouette of a man with a hat. The bottom quarter of the picture is dark and simple, with nothing important in it.` |
+#### H1: Make the pictures (Gemini, and PixelLab as a bonus)
 
-The bottom of `win_screen_2.jpeg` must stay empty: the message panel goes there, like on the WIN
-screen of mission 1.
+**Goal:** the pictures of mission 2, ready for step H5. You can do this step while someone else
+does H2 to H4.
 
-**Bonus, the tiles of the police station in PixelLab** (40 × 40, top-down, the same settings as
-the tiles of level 1):
-- `grafiki/tiles/floor_2.png`: `top-down pixel art floor tile, old police station, worn dark
-  wooden floorboards, dreamy purple light`
-- `grafiki/tiles/wall_2.png`: `top-down pixel art wall tile, a tall grey metal filing cabinet
-  full of case files, seen from above, dreamy purple light`
+To get the same style as mission 1, **give Gemini the old picture** together with the prompt.
 
-No new sound is needed. The loom can use the same music: dance 2 is written on the same beats
-(see H7).
+**1. The portrait of the target.** Give Gemini `grafiki/mr_banks.jpeg`, ask for a square picture,
+and save it as `grafiki/inspector_grey.jpeg`:
+```
+In exactly the same pixel art style as this picture: a polaroid photo held by a paperclip,
+slightly tilted, on a very dark navy blue background. In the photo: Inspector Grey, a police
+detective in her fifties, short silver hair, sharp clever eyes, a beige trench coat, holding a
+small notebook, in a police office with a board of photos linked by red strings behind her.
+A red marker circle is drawn around her face.
+```
 
-**Done when:** the pictures are in `grafiki/` (they're used in H5 and H8).
+**2. The ending.** Give Gemini `grafiki/win_screen.jpeg`, ask for a landscape picture, and save it
+as `grafiki/win_screen_2.jpeg`:
+```
+In exactly the same pixel art style as this picture: the next morning, Inspector Grey smiles at
+her desk and puts a big red stamp "CASE CLOSED" on a file. Glowing dream threads (gold, cyan and
+red) float around her head. On an old computer screen, a small cyan silhouette of a man with a
+hat. The bottom quarter of the picture is dark and simple, with nothing important in it.
+```
+The bottom must stay empty because the message panel goes there.
+
+**3. Bonus: the tiles of the police station** in PixelLab (40 × 40, top-down, the same settings
+as the tiles of level 1). They're used in H8:
+- `grafiki/tiles/floor_2.png`:
+  `top-down pixel art floor tile, old police station, worn dark wooden floorboards, dreamy purple light`
+- `grafiki/tiles/wall_2.png`:
+  `top-down pixel art wall tile, a tall grey metal filing cabinet full of case files, seen from above, dreamy purple light`
+
+No new sound or music is needed: the dance of mission 2 uses the same music.
+
+**Done when:** `inspector_grey.jpeg` and `win_screen_2.jpeg` are in `grafiki/`.
 
 #### H2: One map that can change (≈ 30 min)
-Today `LEVEL_1` is both *the map of level 1* and *the map being played* (picking up the key
-rewrites a row of it). With 2 levels, that has to be 2 different things:
-- `LEVEL_1` (and soon `LEVEL_2`) = the map **as it is at the start**. It never changes.
-- `dungeon_map` = the map **being played now**. This one changes: the key disappears from it,
-  and it becomes the map of level 2 during mission 2.
 
-In `level.py`:
-- Keep `LEVEL_1`, but remove `LEVEL_1_START` (it was a copy of the start map: `LEVEL_1` is now
-  that start map).
-- Add `LEVELS = [LEVEL_1]` (the list of all the levels, one per mission) and
-  `dungeon_map = list(LEVEL_1)`.
-- Replace `reset_level()` by `load_level(number)`: it copies `LEVELS[number]` into `dungeon_map`.
-  Look at how `reset_level()` does it: with `[:]`, to change the list itself and not make a new one.
+**Goal:** prepare the game to play more than one map. Nothing changes on the screen yet.
 
-Then use `dungeon_map` everywhere `LEVEL_1` was used to *play*: in `player.py`, `fog.py` and
-`screens.py`. **Tip:** in VS Code, `Cmd + Shift + F` and search `LEVEL_1` to find them all.
-In `screens.py`, `reset_game()` now calls `load_level(0)` instead of `reset_level()`.
+**Why?** Today `LEVEL_1` has 2 jobs: it is the map of level 1, **and** the map being played (when
+you pick up the key, the `K` becomes a `.` in `LEVEL_1`). With 2 levels, we need 2 different
+things:
+- `LEVELS`: the maps **as they are at the start**, one per mission. They never change.
+- `dungeon_map`: the map **being played now**. The key disappears from it, and during mission 2
+  it becomes a copy of level 2.
 
-**Why does `from level import dungeon_map` still work?** Read the *Shared state* part of
-`CLAUDE.md`: it's a list that is changed *in place*, so every file sees the same one.
+**Files:** `level.py`, `player.py`, `fog.py`, `screens.py`.
 
-**Done when:** the game plays **exactly like before** (key, door, guards, play again twice).
-Nothing new on screen: that's normal, and it's the hardest step! Commit:
-`refactor: separate the start map from the map being played`.
+1. In `level.py`, find:
+   ```python
+   # A copy of the map as it is at the start: picking up the key changes LEVEL_1
+   LEVEL_1_START = list(LEVEL_1)
+   ```
+   and replace it with:
+   ```python
+   # All the maps, one per mission, as they are at the start. They never change
+   LEVELS = [LEVEL_1]
+
+   # The map being played now. Picking up the key changes it (the K becomes a .)
+   dungeon_map = list(LEVEL_1)
+   ```
+2. Still in `level.py`, find the function `reset_level()`:
+   ```python
+   def reset_level():
+       # Put the key back for a new game.
+       # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
+       LEVEL_1[:] = LEVEL_1_START
+   ```
+   and replace it with:
+   ```python
+   def load_level(number):
+       # Copy the start map of a level into the map being played (so the key is back).
+       # [:] changes the list itself, so the files that imported dungeon_map see the new map too
+       dungeon_map[:] = LEVELS[number]
+   ```
+3. In `player.py`, press `Cmd + Option + F`, find `LEVEL_1`, replace with `dungeon_map`, and click
+   **Replace All**. The first line it changes is the `import` at the top: it now reads
+   `from level import dungeon_map, TILE_SIZE, find_tile`.
+4. In `fog.py`: the same, replace all `LEVEL_1` with `dungeon_map`.
+5. In `screens.py`, change 3 lines:
+   - at the top, `from level import LEVEL_1, draw_level, reset_level` becomes
+     `from level import dungeon_map, LEVELS, draw_level, load_level`;
+   - in `update_and_draw_dungeon()`, `draw_level(LEVEL_1)` becomes `draw_level(dungeon_map)`;
+   - in `reset_game()`, `reset_level()   # the key is back in the maze` becomes
+     `load_level(0)   # the map of level 1, with its key`.
+6. Press `Cmd + Shift + F` and search `LEVEL_1`: in the `.py` files, it must now only be in
+   `level.py` (it's also in `PLAN.md` and `CLAUDE.md`, that's fine).
+
+**Why does `from level import dungeon_map` work?** Usually, `from ... import` makes a copy that
+never sees the changes. But `dungeon_map` is a list that is only changed *in place* (with `[:]`,
+or by changing one row): it stays the same list, so every file sees the changes. See the *Shared
+state* part of `CLAUDE.md`.
+
+**Done when:** the game plays **exactly like before**: the key disappears when you take it, the
+door opens, and when you play again the key is back. Nothing new on the screen is normal!
+**Commit:** `refactor: separate the start map from the map being played`.
 
 #### H3: Type in the map of level 2 (≈ 30 min)
-- In `level.py`, type your paper map as `LEVEL_2`, under `LEVEL_1`, and add it to `LEVELS`.
-- **Check the size:** a missing letter is very hard to see. Put this at the bottom of
-  `level.py` for a moment, it prints the rows that are wrong:
-  ```python
-  for row_number, row in enumerate(LEVEL_2):
-      if len(row) != 20:
-          print("row", row_number, "has", len(row), "letters")
-  print(len(LEVEL_2), "rows")
-  ```
-- **To see it in the game** without playing mission 1 first: for a moment, write
-  `dungeon_map = list(LEVEL_2)` instead of `list(LEVEL_1)`. The guards of level 1 will walk at
-  strange places (maybe through walls): don't worry, H6 fixes that.
 
-**Done when:** the game starts on level 2, the player is on `P`, you can take the key and open the
-door. Then put back `list(LEVEL_1)`, remove the `print` lines, and commit.
+**Goal:** the paper map of H0 becomes `LEVEL_2` in the code.
+
+**File:** `level.py`.
+
+1. Under `LEVEL_1` (after its `]`), copy this empty room. It has the right size and the border is
+   already there: change the dots into your walls, and add your `P`, `K` and `D`. Don't add or
+   remove letters, only change them!
+   ```python
+   # Mission 2: the police station of Inspector Grey
+   LEVEL_2 = [
+       "WWWWWWWWWWWWWWWWWWWW",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "WWWWWWWWWWWWWWWWWWWW",
+   ]
+   ```
+   **Tip:** each row must keep 20 letters. When you type a `W`, delete a dot next to it.
+2. Add it to the list of levels: `LEVELS = [LEVEL_1]` becomes `LEVELS = [LEVEL_1, LEVEL_2]`.
+3. **Check the size.** A missing letter is very hard to see. Put this at the very bottom of
+   `level.py` for a moment and run the game: the terminal shows the rows that are wrong.
+   ```python
+   for row_number, row in enumerate(LEVEL_2):
+       if len(row) != 20:
+           print("row", row_number, "has", len(row), "letters")
+   print(len(LEVEL_2), "rows")
+   ```
+   You want no "row ... has ..." line, and `18 rows`.
+4. **Try it** without playing mission 1 first: for a moment, change
+   `dungeon_map = list(LEVEL_1)` into `dungeon_map = list(LEVEL_2)`. The guards of level 1 will
+   walk at strange places (maybe through walls): that's normal, H6 fixes it.
+
+**Done when:** the game starts in level 2, the player is on `P`, and you can take the key and open
+the door. Then **undo step 4** (back to `list(LEVEL_1)`) and remove the lines of step 3.
+**Commit:** `feat: add the map of level 2`.
 
 #### H4: The mission number (≈ 45 min)
-- In `game.py`, next to `state`, add `mission_number = 0`. Like `game.state`, always write
-  `game.mission_number`, never `from game import mission_number`: that copy would stay at 0
-  forever.
-- **`reset_game()` prepares the mission being played.** It already puts everything back at the
-  start. Now it must use `game.mission_number`: `load_level(game.mission_number)` instead of
-  `load_level(0)`, and later (H6, H7) the guards and the loom of that mission too.
-  - **The order matters:** `reset_player()` looks for the `P` in `dungeon_map`. Which one must
-    come first, `load_level(...)` or `reset_player()`?
-- **The WIN screen goes to the next mission.** Today, each of the 3 endings of
-  `draw_win_screen()` has the same lines for SPACE. Write them only once, at the end of the
-  function, and change them:
-  - if this is **not** the last mission, add 1 to `game.mission_number`, call `reset_game()`, and
-    go to `"MISSION"`;
-  - if it **is** the last mission, put `game.mission_number` back to `0`, call `reset_game()`,
-    and go to `"TITLE"`: the game is over.
-  - How do you know it's the last mission? `game.mission_number` is `0` or `1`, and
-    `len(LEVELS)` is `2` (`from level import LEVELS`).
-  - Change the last line of the messages: `"Press SPACE for the next mission."`
-- **WAKE_UP needs nothing new:** it calls `reset_game()`, which now prepares the same mission
-  again. Check it!
-- **The door needs nothing new either:** with the key, it always goes to the loom.
 
-**Done when:** after WIN, SPACE shows the MISSION screen (still the text of Mr. Banks: that's H5),
-the transition, and the maze of level 2. After the second WIN, SPACE goes back to the title, and
-a new game starts on level 1. Losing on level 2 tries level 2 again.
+**Goal:** after the first WIN screen, SPACE starts mission 2 in the maze of level 2. After the
+second WIN screen, the game goes back to the title.
+
+**Files:** `game.py`, `screens.py`.
+
+1. In `game.py`, under the line `state = "TITLE"`, add:
+   ```python
+   # The mission being played: 0 = mission 1, 1 = mission 2 (lists start at 0).
+   # Like game.state, always write game.mission_number: "from game import mission_number"
+   # would make a copy that stays at 0 forever
+   mission_number = 0
+   ```
+2. In `screens.py`, in `reset_game()`, change `load_level(0)` into
+   `load_level(game.mission_number)`. Now `reset_game()` prepares the mission being played.
+   Keep this line **above** `reset_player()`: `reset_player()` looks for the `P` in the map, so
+   the map of the right level must be loaded first.
+3. Still in `screens.py`, in `draw_win_screen()`, the 3 endings all finish with the same 3 lines.
+   **Delete them, all 3 times:**
+   ```python
+           if pygame.K_SPACE in game.keys_down:
+               reset_game()
+               game.state = "MISSION"
+   ```
+   Then write this **once**, at the very end of the function. It starts with 4 spaces, like the
+   `if THE_VICTORY_NUMBER == 1:` line:
+   ```python
+       # SPACE: the next mission, or the end of the game after the last mission
+       if pygame.K_SPACE in game.keys_down:
+           if game.mission_number < len(LEVELS) - 1:
+               game.mission_number = game.mission_number + 1
+               reset_game()
+               game.state = "MISSION"
+           else:
+               game.mission_number = 0
+               reset_game()
+               game.state = "TITLE"
+   ```
+   **Why `len(LEVELS) - 1`?** There are 2 levels, so `len(LEVELS)` is 2, and the last mission is
+   number `1` (because the first one is `0`). "Smaller than 1" means "not the last mission yet".
+   And `reset_game()` comes **after** the change of `game.mission_number`: it must prepare the
+   new mission, not the old one.
+4. In the 3 messages of `draw_win_screen()`, change `"Press SPACE to play again."` into
+   `"Press SPACE for the next mission."`.
+
+You don't need to change anything else:
+- WAKE_UP already calls `reset_game()`: it now prepares **the same mission** again;
+- the door, with the key, still goes to the loom.
+
+**Done when:**
+- [ ] after WIN 1, SPACE shows the MISSION screen (still about Mr. Banks: that's H5), then the
+      maze of level 2;
+- [ ] after WIN 2, SPACE goes back to the title, and a new game starts in level 1;
+- [ ] waking up in level 2 tries level 2 again.
+
+**Commit:** `feat: go to mission 2 after the first win`.
 
 #### H5: The screens of mission 2 (≈ 45 min)
-Now the screens must tell the story of the mission being played. In `screens.py`, near the
-pictures at the top:
-- **MISSION:** one value per mission, in lists. For example
-  `TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]`, `target_images = [banks_image, inspector_image]`
-  (load `inspector_grey.jpeg` like `mr_banks.jpeg`) and `MISSION_TEXTS = [[...], [...]]` (the
-  lines of `draw_message`, one list of lines per mission). `draw_mission_screen()` then uses
-  `[game.mission_number]` everywhere it used Mr. Banks. The client stays the same picture: it's
-  always the same mysterious client!
-- **TRANSITION:** `"Entering the dream of Mr. Banks..."` must use the name of the target too.
-- **WEAVING:** the choice 1/2/3 is about the transfer, so it only makes sense in mission 1. In
-  mission 2, when the threads are woven, show `"The dream is woven. Press SPACE."`, and SPACE goes
-  to WIN.
-- **WIN:** in mission 2, show `win_screen_2.jpeg` and its own message, for example:
-  ```
-  Case closed.
-  Inspector Grey stopped looking for the thief...
-  Press SPACE to finish the game.
-  ```
-  **Tip:** at the start of `draw_win_screen()`, `if game.mission_number == 1:` draws the ending of
-  mission 2, and `else:` keeps the 3 endings of mission 1 as they are.
 
-**Done when:** the whole story of mission 2 is right (mission, transition, weaving, win), and
-mission 1 still looks exactly like before.
+**Goal:** the screens tell the story of the mission being played: the right target, the right
+name, the right ending.
+
+**File:** `screens.py`. Pictures not ready yet (H1)? Then write `inspector_image = banks_image`
+and `win_image_mission_2 = win_image1` for now, and change them when the pictures arrive.
+
+1. **The lists.** At the top, in the `MISSION` section, under the line
+   `banks_image = load_picture(...)`, add:
+   ```python
+   inspector_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "inspector_grey.jpeg")
+
+   # One value per mission: [mission 1, mission 2]
+   TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]
+   target_images = [banks_image, inspector_image]
+   MISSION_TEXTS = [
+       [   # mission 1
+           "INCOMING MESSAGE",
+           " Target:   Mr. Banks, senior banker.",
+           " Mission:  Enter his dream tonight.",
+           "           Make him believe he must transfer",
+           "           1,000,000 € to account FR76 ... 0042.",
+           " Payment:  generous.",
+           " Press SPACE to accept the mission.",
+       ],
+       [   # mission 2
+           "INCOMING MESSAGE",
+           " Target:   Inspector Grey, police detective.",
+           " Mission:  Enter her dream tonight.",
+           "           She is looking for the 1,000,000 €.",
+           "           Make her believe the case is closed.",
+           " Payment:  double.",
+           " Press SPACE to accept the mission.",
+       ],
+   ]
+   ```
+   And in the `WIN` section, under the other win pictures:
+   ```python
+   win_image_mission_2 = load_background("win_screen_2.jpeg")
+   ```
+2. **MISSION screen.** In `draw_mission_screen()`, 3 changes:
+   - the line `screen_surface.blit(banks_image, banks_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))`
+     becomes 2 lines:
+     ```python
+     target_image = target_images[game.mission_number]
+     screen_surface.blit(target_image, target_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
+     ```
+   - `"The target: Mr. Banks"` becomes `"The target: " + TARGET_NAMES[game.mission_number]`;
+   - the long line `textes = ["INCOMING MESSAGE", ...]` becomes
+     `textes = MISSION_TEXTS[game.mission_number]`.
+3. **TRANSITION screen.** In `draw_transition_screen()`, `"Entering the dream of Mr. Banks..."`
+   becomes `"Entering the dream of " + TARGET_NAMES[game.mission_number] + "..."`.
+4. **WAKE_UP screen.** In `draw_wake_up_screen()`, `"Mr. Banks woke up!"` becomes
+   `TARGET_NAMES[game.mission_number] + " woke up!"`, and `"You were thrown out of his dream."`
+   becomes `"You were thrown out of the dream."` (it's *her* dream in mission 2).
+5. **WEAVING screen.** The choice 1/2/3 is about the transfer: it's only for mission 1. In
+   `draw_weaving_screen()`, just **before** the line `textes = ["Chose the weath-in threds ", ...]`,
+   add:
+   ```python
+       # Mission 2 has no choice: SPACE goes straight to the ending
+       if game.mission_number == 1:
+           draw_message(["The dream is woven.", "Press SPACE."])
+           if pygame.K_SPACE in game.keys_down:
+               game.state = "WIN"
+           return
+   ```
+6. **WIN screen.** At the start of `draw_win_screen()`, the line `if THE_VICTORY_NUMBER == 1:`
+   becomes `elif THE_VICTORY_NUMBER == 1:`, and just above it add the ending of mission 2:
+   ```python
+       if game.mission_number == 1:
+           screen_surface.blit(win_image_mission_2, (0, 0))
+           draw_message([
+               "Case closed.",
+               "Inspector Grey stopped looking for the thief...",
+               "Press SPACE to finish the game.",
+           ], center_y=WIN_MESSAGE_Y)
+   ```
+   The 3 endings of mission 1 stay as they are, under it.
+
+**Done when:**
+- [ ] mission 2 shows Inspector Grey, her mission text, her name in the transition, no choice
+      after the weaving, and her ending;
+- [ ] mission 1 looks exactly like before.
+
+**Commit:** `feat: the story of mission 2`.
 
 #### H6: The guards of mission 2 (≈ 30 min)
-Right now the maze of level 2 has the guards of level 1. Each level needs its own list of routes.
-- In `guards.py`, turn `GUARD_ROUTES` into a **list of lists**: one list of routes per level,
-  in the same order as `LEVELS`:
-  ```python
-  GUARD_ROUTES = [
-      [ ... the 3 routes of level 1, as today ... ],
-      [ ... the 4 routes of level 2, from your paper ... ],
-  ]
-  ```
-- In `reset_guards()`, only take the routes of the mission being played:
-  `GUARD_ROUTES[game.mission_number]` (with `import game` at the top).
-- **Vertical routes work already:** `move_guards()` handles north and south, and the guard
-  pictures exist for the 4 directions. Only one small thing: a new guard starts facing `"east"`.
-  For a vertical route that's wrong during the first steps. Can you fix it? (Hint: compare the
-  rows of `start` and `end`.)
-- To check a route: walk straight into the guard, it should take 15 s.
 
-**Done when:** level 1 has its 3 guards like before, level 2 has its own guards on their paper
-routes, and nobody walks through a wall.
+**Goal:** level 2 has its own guards, on the routes you drew in H0.
+
+**File:** `guards.py`.
+
+1. At the top, under `import player`, add `import game`.
+2. `GUARD_ROUTES` becomes a **list of 2 lists**: the routes of mission 1, then the routes of
+   mission 2. Replace it with this, and write your routes from the paper in the second list:
+   ```python
+   GUARD_ROUTES = [
+       [   # mission 1
+           ((6, 2), (14, 2)),         # top corridor: the easy one, pass on row 1
+           ((11, 10.5), (18, 10.5)),  # big room before the door: blocks rows 10 and 11
+           ((4, 15.5), (15, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+       ],
+       [   # mission 2: (column, row) of the start -> (column, row) of the end
+           ((1, 1), (5, 1)),          # an example: change it with your routes!
+       ],
+   ]
+   ```
+   **To find the column and the row of a tile,** count from 0, starting at the top left corner.
+   This ruler helps: put it above your map, like in the table of improvement F.
+   ```
+              0         1
+              01234567890123456789
+      row  0  WWWWWWWWWWWWWWWWWWWW
+      row  1  W..................W
+   ```
+   For a guard walking up and down, the column stays the same: `((8, 3), (8, 12))`.
+3. In `reset_guards()`, take only the routes of the mission being played:
+   `for start, end in GUARD_ROUTES:` becomes
+   `for start, end in GUARD_ROUTES[game.mission_number]:`.
+4. **Look the right way.** A new guard always starts looking `"east"`, so a guard walking down
+   looks the wrong way at the start. In `reset_guards()`, just above `guards.append(...)`, add:
+   ```python
+           # At the start, the guard looks towards the end of its route
+           if end[0] > start[0]:
+               direction = "east"
+           elif end[0] < start[0]:
+               direction = "west"
+           elif end[1] > start[1]:
+               direction = "south"
+           else:
+               direction = "north"
+   ```
+   and in `guards.append(...)`, `"direction": "east"` becomes `"direction": direction`.
+
+**Done when:**
+- [ ] level 1 has its 3 guards like before;
+- [ ] level 2 has its 4 guards, on the routes of the paper, and none walks through a wall;
+- [ ] walking into a guard of level 2 takes 15 s.
+
+**Commit:** `feat: the guards of mission 2`.
 
 #### H7: A harder loom (≈ 30 min)
-Same trick in `loom.py` (with `import game` at the top):
-- Rename `SONG` to `SONG_1`, and add `SONG_2` under it. Same music, same beats, so it uses the
-  same `MUSIC_START`. It's harder because more arrows fall **between** the beats (the letters
-  2, 4, 6...) and there are fewer dots. Here is one, change it as you like:
-  ```python
-  SONG_2 = (
-      "....L...R...L.R."  # beats 0-8: the soft start of the music
-      "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
-      "L.R.LDUR.R.L.URD"  # beats 16-24
-      "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
-      "LDUR.RUDL.LDUR.."  # beats 32-40
-      "LR.LR.UD.UD.LDUR"  # beats 40-48
-      "LDURLDURL...L..."  # beats 48-56: the end of the music
-  )
-  ```
-  Each line must keep **exactly 16 letters**, or the arrows stop following the music.
-- Then one value per mission: `SONGS = [SONG_1, SONG_2]`, `SCROLL_SPEEDS = [300, 360]`,
-  `GOOD_WINDOWS = [0.16, 0.14]` and `PASS_PERCENTS = [60, 65]`. Replace each old constant in the
-  code by its list with `[game.mission_number]` (for example `GOOD_WINDOWS[game.mission_number]`
-  instead of `GOOD_WINDOW`). **Tip:** `Cmd + F` on the old name finds them all.
-- `PERFECT_WINDOW` can stay the same for both missions: it's only for the pride!
-- `reset_game()` already calls `loom.reset_loom()`, so the notes of the right song are made at the
-  start of each mission.
 
-**Done when:** the loom of mission 2 has more arrows, faster, and asks for more threads (the rules
-panel shows the right number), and the loom of mission 1 is the same as before.
+**Goal:** the dance of mission 2 has more arrows, a bit faster, and needs more threads.
+
+**File:** `loom.py`.
+
+1. At the top, under `import pygame`, add `import game`.
+2. At the top of the file, **delete** these 3 lines (the lists of step 4 will replace them):
+   ```python
+   SCROLL_SPEED = 300        # pixels per second: how fast the arrows climb
+   GOOD_WINDOW = 0.16        # ... and as "GOOD". Later than that, the thread is missed
+   PASS_PERCENT = 60         # how many threads (in %) must be woven for the dream to hold
+   ```
+3. Now, everywhere the code used one of these 3 names, it must take the value of the mission
+   being played. With `Cmd + Option + F` and **Replace All**:
+
+   | Find | Replace with | How many |
+   |---|---|---|
+   | `GOOD_WINDOW` | `GOOD_WINDOWS[game.mission_number]` | 3 (in `judge_keys()` and `loom_finished()`) |
+   | `* PASS_PERCENT` | `* PASS_PERCENTS[game.mission_number]` | 1 (in `threads_needed()`) |
+   | `* SCROLL_SPEED` | `* SCROLL_SPEEDS[game.mission_number]` | 1 (in `draw_loom()`) |
+   | `enumerate(SONG)` | `enumerate(SONGS[game.mission_number])` | 1 (in `reset_loom()`) |
+
+   VS Code shows "1 of 3" (or "of 1") in the search box: check it's the same number as in the
+   table before clicking Replace All. Do this step **before** step 4: after it, `GOOD_WINDOWS` is
+   in the file too, and Replace All would change it as well!
+4. Rename the song: `SONG = (` becomes `SONG_1 = (`. Then, under the `)` that closes `SONG_1`, add
+   the song of mission 2 and the lists. It uses the same music and the same beats, but more arrows
+   fall **between** the beats, and there are fewer dots:
+   ```python
+   SONG_2 = (
+       "....L...R...L.R."  # beats 0-8: the soft start of the music
+       "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
+       "L.R.LDUR.R.L.URD"  # beats 16-24
+       "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
+       "LDUR.RUDL.LDUR.."  # beats 32-40
+       "LR.LR.UD.UD.LDUR"  # beats 40-48
+       "LDURLDURL...L..."  # beats 48-56: the end of the music
+   )
+
+   # One value per mission: [mission 1, mission 2]
+   SONGS = [SONG_1, SONG_2]
+   SCROLL_SPEEDS = [300, 360]   # pixels per second: how fast the arrows climb
+   GOOD_WINDOWS = [0.16, 0.14]  # seconds too early or too late that still count as "GOOD"
+   PASS_PERCENTS = [60, 65]     # how many threads (in %) must be woven for the dream to hold
+   ```
+   You can change `SONG_2`, but each line must keep **exactly 16 letters**, or the arrows stop
+   following the music.
+
+**Forgot one?** Python tells you: the game stops with `NameError: name 'GOOD_WINDOW' is not
+defined`, and the message gives the number of the line to fix.
+
+`reset_game()` already calls `loom.reset_loom()`, so the arrows of the right song are ready at the
+start of each mission.
+
+**Done when:**
+- [ ] in mission 1, the rules panel of the loom says "at least 29 threads", like before;
+- [ ] in mission 2, it says "at least 45 threads", and the arrows are faster.
+
+**Commit:** `feat: a harder loom for mission 2`.
 
 #### H8: Polish (optional, pick what you like)
-- **More time for a bigger maze:** `Dream_time` becomes `DREAM_TIMES = [60, 75]`, one per mission.
-- **Harder guards:** a speed per mission (`GUARD_SPEEDS = [2, 3]`). Careful: a speed that doesn't
-  divide the length of a route still works, thanks to the `<= GUARD_SPEED` in `move_guards()`.
-- **Show the mission:** `"Mission 2"` at the top of the MISSION screen, or in a corner of the
-  dungeon with `draw_label(...)` (after the fog, or the fog hides it!).
-- **The tiles of the police station:** `draw_level()` picks `floor_2.png` and `wall_2.png` during
-  mission 2 (lists again: `floor_images = [..., ...]`).
-- **The story follows your choice:** the mission 2 text can change with the ending of mission 1
-  (`THE_VICTORY_NUMBER`). Ending 3 ("he gives you another chance") is a good start for it:
+- **More time for a bigger maze.** In `screens.py`, `Dream_time = 60` becomes
+  `DREAM_TIMES = [60, 75]`, and in `update_and_draw_dungeon()`, `Dream_time` becomes
+  `DREAM_TIMES[game.mission_number]`.
+- **Faster guards.** In `guards.py`, `GUARD_SPEED = 2` becomes `GUARD_SPEEDS = [2, 3]`, and each
+  `GUARD_SPEED` in `move_guards()` becomes `GUARD_SPEEDS[game.mission_number]`.
+- **Show the mission.** `draw_label("Mission 2", ...)` in a corner of the dungeon, **after**
+  `draw_fog(...)` (or the fog hides it!).
+- **The tiles of the police station** (from H1). In `level.py`, `floor_image` becomes a list of
+  2 pictures, `floor_images = [..., ...]`, and `draw_level()` uses
+  `floor_images[game.mission_number]`. Same idea for the wall.
+- **The story follows your choice.** The text of mission 2 can change with the ending of
+  mission 1 (`THE_VICTORY_NUMBER`). Ending 3 ("he gives you another chance") is a good start:
   `"This is your last chance, Weaver."`
 - **A choice in mission 2 too**, with its own endings (and their pictures).
-- **A new song for the loom:** a second Suno song, with its own `LOOM_BPM` and `MUSIC_START` (lists
-  again). Measure its first beat with ffmpeg, like for the first one (see the commit
-  `feat: add the weaving mini-game`).
-- **Docs:** update the screen flow in `CLAUDE.md` (TITLE → MISSION → ...) with mission 2.
+- **A new song for the loom**: a second Suno song, with its own `LOOM_BPM` and `MUSIC_START`
+  (lists again!). Its first beat must be measured with ffmpeg, like for the first song (see the
+  commit `feat: add the weaving mini-game`).
+- **Docs.** Update the screen flow in `CLAUDE.md` (TITLE → MISSION → ...) with mission 2.
 
-**Done when:** you can play the whole game twice in a row: mission 1, mission 2, the end, and
-once losing in mission 2 then winning it on the second try. Then commit:
-`feat: add mission 2 with a new target`.
+**Done when:** you can play the whole game twice in a row (mission 1, mission 2, the end), and
+once losing in mission 2 and winning it on the second try. **Commit:**
+`feat: polish mission 2`.
 
 ---
 
