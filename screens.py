@@ -27,13 +27,17 @@ MESSAGE_Y = 530       # the middle of the mission text, under the pictures
 MISSION_BACKGROUND = (11, 7, 31)  # the colour around the pictures, so their edges can't be seen
 CLIENT_COLOR = (80, 200, 255)  # cyan, like the video call
 TARGET_COLOR = (220, 70, 90)   # red, like the circle around his face
+THE_VICTORY_NUMBER = 0
 client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jpeg")
 banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 
 # ---------------- WIN ----------------
 # Made with Gemini: the next morning, Mr. Banks sends the money. The bottom of the
 # picture (the front of the desk) is dark and simple, so the message goes there
-win_image = load_background("win_screen.jpeg")
+win_image1 = load_background("win_screen.jpeg")
+win_image2 = load_background("find anonime.jpg")
+win_image3 = load_background("second try.jpg")
+
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
 # ---------------- WAKE UP ----------------
@@ -292,7 +296,7 @@ def draw_threads(elapsed):
 
 def draw_weaving_screen():
     global weaving_start
-
+    global THE_VICTORY_NUMBER
     # Remember the time on the first frame of the weaving
     # (not when coming back from the DEMO screen: the threads are already woven)
     if weaving_start is None:
@@ -311,11 +315,14 @@ def draw_weaving_screen():
     textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number."]
     draw_message(textes)
     if pygame.K_1 in game.keys_down:
+        THE_VICTORY_NUMBER = 1
         game.state = "WIN"
     elif pygame.K_2 in game.keys_down:
-        game.state = "DEMO"
+        THE_VICTORY_NUMBER = 2
+        game.state = "WIN"
     elif pygame.K_3 in game.keys_down:
-        game.state = "DEMO"
+        THE_VICTORY_NUMBER = 3
+        game.state = "WIN"
 
 def draw_wake_up_screen():
     screen_surface.blit(wake_up_image, (0, 0))
@@ -329,15 +336,38 @@ def draw_wake_up_screen():
         game.state = "MISSION"
 
 def draw_win_screen():
-    screen_surface.blit(win_image, (0, 0))
-    draw_message([
-        "Mission complete.",
-        "Mr. Banks made a very generous transfer...",
-        "Press SPACE to play again.",
-    ], center_y=WIN_MESSAGE_Y)
-    if pygame.K_SPACE in game.keys_down:
-        reset_game()
-        game.state = "MISSION"
+    global THE_VICTORY_NUMBER
+    if THE_VICTORY_NUMBER == 1:
+        screen_surface.blit(win_image1, (0, 0))
+        draw_message([
+            "Mission complete.",
+            "Mr. Banks made a very generous transfer...",
+            "Press SPACE to play again.",
+        ], center_y=WIN_MESSAGE_Y)
+        if pygame.K_SPACE in game.keys_down:
+            reset_game()
+            game.state = "MISSION"
+    elif THE_VICTORY_NUMBER == 2:
+        screen_surface.blit(win_image2, (0, 0))
+        draw_message([
+            "When Mr. Banks found out...",
+            "that someone tried to steal his money.",
+            "he started searching the thief",
+            "Press SPACE to play again.",
+        ], center_y=WIN_MESSAGE_Y)
+        if pygame.K_SPACE in game.keys_down:
+            reset_game()
+            game.state = "MISSION"
+    elif THE_VICTORY_NUMBER == 3:
+        screen_surface.blit(win_image3, (0, 0))
+        draw_message([
+            "You didn't do what he asked you.",
+            "but he gives you another chance to be pardoned.",
+            "Press SPACE to play again.",
+        ], center_y=WIN_MESSAGE_Y)
+        if pygame.K_SPACE in game.keys_down:
+            reset_game()
+            game.state = "MISSION"
 
 def draw_demo_screen():
     screen_surface.fill((20, 90, 90))
