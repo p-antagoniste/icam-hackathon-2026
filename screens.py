@@ -412,27 +412,32 @@ def draw_weaving_screen():
     draw_threads(elapsed)
     draw_state_name("WEAVING", color=(192, 242, 57))
 
-    if not weaving_done:
-        draw_message(["Weaving the dream..."], center_y=SCREEN_HEIGHT - 60)
-        return  # the choice is shown once all the threads are woven
+
+        
     if game.mission_number == 1:
-        draw_message(["The dream is woven.", "Press SPACE."])
-        if pygame.K_SPACE in game.keys_down:
+        textes_2 = ["Chose the weath-in threds ", " [1]   Give the power to the ... ? thread", " [2]   find and attack the anonymous thread", " [3]   Do nothing and leave the dream", "Chose a number."]
+        draw_message(textes_2)
+        if pygame.K_1 in game.keys_down:
+            THE_VICTORY_NUMBER = 21
             game.state = "WIN"
-        return
-
-
-    textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number."]
-    draw_message(textes)
-    if pygame.K_1 in game.keys_down:
-        THE_VICTORY_NUMBER = 1
-        game.state = "WIN"
-    elif pygame.K_2 in game.keys_down:
-        THE_VICTORY_NUMBER = 2
-        game.state = "WIN"
-    elif pygame.K_3 in game.keys_down:
-        THE_VICTORY_NUMBER = 3
-        game.state = "WIN"
+        elif pygame.K_2 in game.keys_down:
+            THE_VICTORY_NUMBER = 22
+            game.state = "WIN"
+        elif pygame.K_3 in game.keys_down:
+            THE_VICTORY_NUMBER = 23
+            game.state = "WIN"
+    if game.mission_number == 0:
+        textes = ["Chose the weath-in threds ", " [1]   Transfer to the acount thread", " [2]   Keep the money and try to find who did this thread", " [3]   Do nothing and leave the dream", "Chose a number."]
+        draw_message(textes)
+        if pygame.K_1 in game.keys_down:
+            THE_VICTORY_NUMBER = 1
+            game.state = "WIN"
+        elif pygame.K_2 in game.keys_down:
+            THE_VICTORY_NUMBER = 2
+            game.state = "WIN"
+        elif pygame.K_3 in game.keys_down:
+            THE_VICTORY_NUMBER = 3
+            game.state = "WIN"
 
 def draw_wake_up_screen():
     screen_surface.blit(wake_up_images[game.mission_number], (0, 0))
@@ -447,14 +452,8 @@ def draw_wake_up_screen():
 
 def draw_win_screen():
     global THE_VICTORY_NUMBER
-    if game.mission_number == 1:
-        screen_surface.blit(win_image_mission_2, (0, 0))
-        draw_message([
-            "Mission complete.",
-            "The President of France gave all his powers to ... ?",
-            "Press SPACE to find out who the client was.",
-        ], center_y=WIN_MESSAGE_Y)
-    elif THE_VICTORY_NUMBER == 1:
+
+    if THE_VICTORY_NUMBER == 1:
         screen_surface.blit(win_image1, (0, 0))
         draw_message([
             "Mission complete.",
@@ -477,6 +476,32 @@ def draw_win_screen():
             "You didn't do what he asked you.",
             "but he gives you another chance to be pardoned.",
             "Press SPACE for the next mission.",
+        ], center_y=WIN_MESSAGE_Y)
+
+    elif THE_VICTORY_NUMBER == 21:
+        screen_surface.blit(win_image1, (0, 0))
+        draw_message([
+            "Mission complete.",
+            "The President of France gave all his powers to ... ?",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+
+    elif THE_VICTORY_NUMBER == 22:
+        screen_surface.blit(win_image2, (0, 0))
+        draw_message([
+            "When the president found out...",
+            "that someone tried to attack him.",
+            "he started searching the thief",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+
+    elif THE_VICTORY_NUMBER == 23:
+        screen_surface.blit(win_image3, (0, 0))
+        draw_message([
+            "You didn't do what he asked you.",
+            "So he didn't give you another chance.",
+            "Because you knew to much so he killed you.",
+            "Press SPACE to find out who the client was.",
         ], center_y=WIN_MESSAGE_Y)
     # SPACE: the next mission, or who the client was after the last mission
     if pygame.K_SPACE in game.keys_down:
