@@ -196,7 +196,7 @@ after each one.
 | E | **Memory fragments** | ★★☆ | Use the 3 thread spools (`grafiki/objects/thread_*.png`): collect 3 "threads" before the door opens |
 | F | **Guards (projections)** | ★★☆ | As in *Inception*, the mind defends itself: enemies walk back and forth along a corridor. Touching one costs 20 s: the banker wakes up sooner |
 | G | **Weaving mini-game** | ★★☆ | At the door, press a sequence of arrows shown on screen (↑ → ↓ ←…) to weave the threads. Each correct key adds a coloured thread |
-| H | **Level 2 / dream layers** | ★★☆ | A second map = "a deeper dream". Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` |
+| H | **Level 2 / dream layers** | ★★☆ | A second map = "a deeper dream". Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` (step by step below) |
 | I | **Moral choice + 2 endings** | ★★☆ | At the door: "Weave the ordered dream" or "Weave a warning dream". One ending reveals the client was a thief, the other that the banker was the criminal… |
 | J | **Walking animation** | ★★★ | 2-frame walking animation per direction (movement is already smooth) |
 
@@ -507,6 +507,160 @@ before you see a guard.
 
 **Done when:** the full game works twice in a row (touched once and still win, then lose because
 of the guards), then commit: `feat: add the guards`.
+
+### Improvement H: Level 2, a deeper dream, step by step
+
+The goal: like in *Inception*, there is a dream **inside** the dream. When the Weaver opens the
+door of level 1, there's no weaving yet: Mr. Banks falls into a deeper dream, with a new maze, a
+new key, a new door and new guards. The weaving (and the choice 1/2/3) only comes after the door
+of **level 2**.
+
+```
+ ... DUNGEON (level 1) --door--> DEEPER --SPACE--> TRANSITION --> DUNGEON (level 2) --door--> WEAVING ...
+```
+
+The big idea: the code already plays **one map**. You won't write a second dungeon: you'll teach
+the game to **swap the map** (and the guards) for another one, then play it the same way.
+
+This time the steps say *what* to do and give hints, but not the full code: you've already done
+all the tricks in improvements C and F. When you're stuck, look for the same idea in the code
+that already works. Same as before: don't move on before **"Done when…"** passes, and commit
+after each step.
+
+#### H0: Imagine level 2 (≈ 30 min, on paper)
+- **The story:** where is the Weaver now? An idea: level 1 is Mr. Banks's house, level 2 is
+  **the bank vault in his dream**, where the idea of the transfer must be planted.
+- **The map:** draw it on squared paper, 20 columns × 18 rows, with the same letters as level 1
+  (`W` `.` `P` `K` `D`). The rules:
+  - The **whole border is `W`**. That's not only for the look: the fog and the walls read the
+    tile next to the player, and outside the map there is no tile, so the game would crash.
+  - Exactly **one** `P`, one `K` and one `D`.
+  - Every row has **exactly 20 letters**, and there are **exactly 18 rows**.
+  - Make sure you can walk from `P` to `K`, then from `K` to `D` (follow it with a pencil!).
+  - Level 2 should be a bit harder than level 1: longer, with more dead ends.
+- **The guards:** on the same paper, draw their routes like in the table of improvement F (one
+  number per guard). A route is a **straight line** (one row, or one column: guards can now walk
+  up and down too!), only on floor tiles, and there must always be a safe place to wait next to it.
+
+**Done when:** the map and the guard routes are on paper, and someone else (not the one who drew
+it) managed to follow the path from `P` to `K` to `D` with a finger.
+
+#### H1: One map that can change (≈ 30 min)
+Today `LEVEL_1` is both *the map of level 1* and *the map being played* (picking up the key
+rewrites a row of it). With 2 levels, that has to be 2 different things:
+- `LEVEL_1` (and soon `LEVEL_2`) = the map **as it is at the start**. It never changes.
+- `dungeon_map` = the map **being played now**. This one changes: the key disappears from it,
+  and it becomes level 2 when you go deeper.
+
+In `level.py`:
+- Keep `LEVEL_1`, but remove `LEVEL_1_START` (it was a copy of the start map: `LEVEL_1` is now
+  that start map).
+- Add `LEVELS = [LEVEL_1]` (the list of all the levels, in order), `level_number = 0` (0 = the
+  first level, because lists start at 0) and `dungeon_map = list(LEVEL_1)`.
+- Replace `reset_level()` by `load_level(number)`: it remembers `number` in `level_number` (don't
+  forget the `global` line) and copies `LEVELS[number]` into `dungeon_map`. Look at how
+  `reset_level()` does it: with `[:]`, to change the list itself and not make a new one.
+
+Then use `dungeon_map` everywhere `LEVEL_1` was used to *play*: in `player.py`, `fog.py` and
+`screens.py`. **Tip:** in VS Code, `Cmd + Shift + F` and search `LEVEL_1` to find them all.
+In `screens.py`, `reset_game()` now calls `load_level(0)` instead of `reset_level()`.
+
+**Why does `from level import dungeon_map` still work?** Read the *Shared state* part of
+`CLAUDE.md`: it's a list that is changed *in place*, so every file sees the same one.
+
+**Done when:** the game plays **exactly like before** (key, door, guards, play again twice).
+Nothing new on screen: that's normal, and it's the hardest step! Commit:
+`refactor: separate the start map from the map being played`.
+
+#### H2: Type in the map of level 2 (≈ 30 min)
+- In `level.py`, type your paper map as `LEVEL_2`, under `LEVEL_1`, and add it to `LEVELS`.
+- **Check the size:** a missing letter is very hard to see. Put this at the bottom of
+  `level.py` for a moment, it prints the rows that are wrong:
+  ```python
+  for row_number, row in enumerate(LEVEL_2):
+      if len(row) != 20:
+          print("row", row_number, "has", len(row), "letters")
+  print(len(LEVEL_2), "rows")
+  ```
+- **To see it in the game** without playing level 1 first: for a moment, write
+  `dungeon_map = list(LEVEL_2)` instead of `list(LEVEL_1)`. The guards of level 1 will walk at
+  strange places (maybe through walls): don't worry, H4 fixes that.
+
+**Done when:** the game starts on level 2, the player is on `P`, you can take the key and open the
+door. Then put back `list(LEVEL_1)`, remove the `print` lines, and commit.
+
+#### H3: The DEEPER screen (≈ 45 min)
+A new screen, between the two levels. You did it for WAKE_UP: follow the 4 steps from
+`CLAUDE.md` (section *Architecture*).
+1. Add `"DEEPER"` to `STATES` in `game.py`.
+2. In `screens.py`, write `draw_deeper_screen()`: a background colour (or a picture), and a
+   `draw_message([...])`, for example:
+   ```
+   The door opens on a staircase...
+   Mr. Banks falls into a deeper dream.
+   Press SPACE to follow him.
+   ```
+   When SPACE is pressed, start level 2, then `game.state = "TRANSITION"`.
+3. In `main.py`, import it and add its `elif`.
+4. (Optional) A sound when it starts, in `SCREEN_SOUNDS`.
+
+**Starting a level** needs a lot of resets: the map, the player on the new `P` without the key,
+the guards, and a full timer (`dungeon_start` and `time_lost`). `reset_game()` already does
+almost all of it! Write a new function `start_level(number)` in `screens.py` with that part,
+and make `reset_game()` call `start_level(0)`.
+- **The order matters:** `reset_player()` looks for the `P` in `dungeon_map`. Which one must
+  come first, `load_level(...)` or `reset_player()`?
+
+**The door now has 2 jobs.** In `door_try()` (`player.py`), with the key:
+- if this is **not** the last level, go to `"DEEPER"`;
+- if it **is** the last level, go to `"WEAVING"` like before.
+- How do you know it's the last level? `level_number` is `0` or `1`, and `len(LEVELS)` is `2`.
+- `level_number` changes during the game, so `import level` and write `level.level_number`,
+  never `from level import level_number`: that would be a copy that stays at 0 forever.
+
+**Done when:** level 1's door shows the DEEPER screen, SPACE plays the transition, then level 2
+starts with the player on its `P`, a key, and a full timer. Level 2's door goes to WEAVING. After
+the WIN screen, SPACE goes back to **level 1**.
+
+#### H4: The guards of level 2 (≈ 30 min)
+Right now every level has the guards of level 1. Each level needs its own list of routes.
+- In `guards.py`, turn `GUARD_ROUTES` into a **list of lists**: one list of routes per level,
+  in the same order as `LEVELS`:
+  ```python
+  GUARD_ROUTES = [
+      [ ... the 3 routes of level 1, as today ... ],
+      [ ... the routes of level 2, from your paper ... ],
+  ]
+  ```
+- In `reset_guards()`, only take the routes of the level being played:
+  `GUARD_ROUTES[level.level_number]` (the same `import level` trick as in H3).
+- **Vertical routes work already:** `move_guards()` handles north and south, and the guard
+  pictures exist for the 4 directions. Only one small thing: a new guard starts facing `"east"`.
+  For a vertical route that's wrong during the first steps. Can you fix it? (Hint: compare the
+  rows of `start` and `end`.)
+- To check a route: walk straight into the guard, it should take 20 s.
+
+**Done when:** level 1 has its 3 guards like before, level 2 has its own guards on their paper
+routes, and after losing on level 2 (WAKE_UP), the next game has the guards of level 1 again.
+
+#### H5: Make it feel deeper (optional, pick what you like)
+- **Show the level:** `"Level 2"` somewhere on the screen of the dungeon, with `draw_label(...)`
+  (after the fog, or the fog hides it!).
+- **The right transition text:** `"Entering the dream of Mr. Banks..."` for level 1, and
+  `"Going deeper into the dream..."` for level 2 (use `level.level_number`).
+- **More time for a bigger maze:** `Dream_time` can become a list, `[60, 90]`, one per level.
+- **Harder guards:** a speed per level (`GUARD_SPEEDS = [2, 3]`), or more guards.
+- **Try again from level 2:** losing on level 2 sends you back to level 1. Kinder: the WAKE_UP
+  screen could call `start_level(level.level_number)` and go to TRANSITION, so you try level 2
+  again (but then, how do you go back to the MISSION screen?).
+- **New pictures for level 2:** a vault floor and vault walls made in PixelLab (40 × 40, the same
+  settings as the level 1 tiles), for example *"top-down pixel art tile, floor of a golden bank
+  vault, dreamy purple light"*. Save them as `grafiki/tiles/floor_2.png` and `wall_2.png`, then
+  `draw_level()` picks the pictures of the level being played.
+- **Docs:** update the screen flow in `CLAUDE.md` (TITLE → MISSION → ...) with the DEEPER screen.
+
+**Done when:** you can play the full game twice in a row: level 1, DEEPER, level 2, weaving, win,
+and once losing on level 2. Then commit: `feat: add level 2, a deeper dream`.
 
 ---
 
