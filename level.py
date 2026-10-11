@@ -46,10 +46,9 @@ LEVEL_2 = [
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 LEVELS = [LEVEL_1, LEVEL_2]
-dungeon_map = list(LEVEL_1)  # a copy of the map as it is at the start: picking up the key changes LEVEL_1
-
-# A copy of the map as it is at the start: picking up the key changes LEVEL_1
-
+# The map being played now: a copy of a level, so picking up the key changes the copy
+# and LEVEL_1 and LEVEL_2 stay as they are for the next game
+dungeon_map = list(LEVEL_1)
 
 # ---------------- TILES ----------------
 
@@ -73,11 +72,9 @@ def find_tile(level, letter):
     return None
 
 def load_level(number):
-    global LEVEL_1
-    global dungeon_map
-    dungeon_map[:] = list(LEVEL_2)
-    # Put the key back for a new game.
-    # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
+    # Copy level number 0 (mission 1) or 1 (mission 2) into the map: the key is back too.
+    # [:] changes the list itself, so the files that imported dungeon_map see the new map
+    dungeon_map[:] = list(LEVELS[number])
 
 
 def draw_level(level):
