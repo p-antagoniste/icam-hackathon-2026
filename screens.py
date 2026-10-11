@@ -66,6 +66,8 @@ win_image1 = load_background("win_screen.jpeg")
 win_image2 = load_background("find anonime.jpg")
 win_image3 = load_background("second try.jpg")
 win_image_mission_2 = load_background("win_screen_2.jpeg")
+win_image_mission2_2 = load_background("end searche.jpg")
+win_image_mission3_2 = load_background("mort.jpg")
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
 # ---------------- REVEAL ----------------
@@ -479,7 +481,7 @@ def draw_win_screen():
         ], center_y=WIN_MESSAGE_Y)
 
     elif THE_VICTORY_NUMBER == 21:
-        screen_surface.blit(win_image1, (0, 0))
+        screen_surface.blit(win_image_mission_2, (0, 0))
         draw_message([
             "Mission complete.",
             "The President of France gave all his powers to ... ?",
@@ -487,7 +489,7 @@ def draw_win_screen():
         ], center_y=WIN_MESSAGE_Y)
 
     elif THE_VICTORY_NUMBER == 22:
-        screen_surface.blit(win_image2, (0, 0))
+        screen_surface.blit(win_image_mission2_2, (0, 0))
         draw_message([
             "When the president found out...",
             "that someone tried to attack him.",
@@ -496,7 +498,7 @@ def draw_win_screen():
         ], center_y=WIN_MESSAGE_Y)
 
     elif THE_VICTORY_NUMBER == 23:
-        screen_surface.blit(win_image3, (0, 0))
+        screen_surface.blit(win_image_mission3_2, (0, 0))
         draw_message([
             "You didn't do what he asked you.",
             "So he didn't give you another chance.",
