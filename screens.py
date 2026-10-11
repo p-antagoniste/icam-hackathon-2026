@@ -35,6 +35,11 @@ banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 win_image = load_background("win_screen.jpeg")
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
+# ---------------- WAKE UP ----------------
+# Made with Gemini: Mr. Banks wakes up and the dream threads break. Like the win
+# picture, its bottom is dark and empty, so the message goes at WIN_MESSAGE_Y too
+wake_up_image = load_background("wake_up.jpeg")
+
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
@@ -305,6 +310,7 @@ def draw_weaving_screen():
         game.state = "DEMO"
 
 def draw_wake_up_screen():
+    screen_surface.blit(wake_up_image, (0, 0))
     draw_message([
         "Mr. Banks woke up!",
         "You were thrown out of his dream.",

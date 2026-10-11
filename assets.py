@@ -53,10 +53,12 @@ sounds = {
     "locked_door_bump": load_sound("locked_door_bump"),
     "entering_dream": load_sound("entering_dream"),
     "weaving_dream": load_sound("weaving_dream"),
+    "wake_up": load_sound("wake_up"),
 }
 
 # Played once when a screen starts
 SCREEN_SOUNDS = {
     "TRANSITION": "entering_dream",
     "WEAVING": "weaving_dream",
+    "WAKE_UP": "wake_up",
 }
