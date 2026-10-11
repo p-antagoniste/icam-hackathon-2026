@@ -286,6 +286,202 @@ not, because `dungeon_start` still holds the time of the **first** game.
 **Done when:** the full game works twice in a row (win once, lose once), then commit:
 `feat: add the dream timer`.
 
+### Improvement F: Guards (projections), step by step
+
+The goal: like in *Inception*, Mr. Banks's mind defends itself. **3 guards** (dream
+"projections") walk back and forth, always on the same line. If one touches the Weaver,
+Mr. Banks wakes up: it's the same WAKE_UP screen as when the timer runs out.
+
+Level 1 must stay easy, so the guards are **slow, never chase you, and never leave their line**.
+The only trick is to wait for the right moment, hidden in a side passage.
+
+#### F0: What to create first (PixelLab and ElevenLabs)
+
+Start the pictures and sounds now: they're made while you code F1 to F3 with red squares
+(golden rule: coloured rectangles first, images later).
+
+**Character in PixelLab: the guard.** Use the same settings as the player (40 × 40, top-down
+view, 4 directions, same outline and shading), so the guard fits with the player and the tiles.
+
+- **Prompt:**
+  ```
+  A dream projection guard: a tall faceless man in a dark charcoal grey business suit, white
+  shirt and dark red tie, smooth pale grey face with no mouth and no nose, only two small
+  glowing red eyes, a faint purple ghostly glow around his outline, arms stiff along his body.
+  Like a bank security agent seen in a dream: creepy but not scary for kids, no weapon, no blood.
+  Pixel art, top-down RPG character, dark dreamy colours (purple, grey, red).
+  ```
+- **Animation:** the *walking* animation in the 4 directions, with this description:
+  ```
+  A slow, stiff, robotic walk, like a sleepwalker on patrol.
+  ```
+- **Files to save** in a new folder `grafiki/guard/`, with the same names as the player:
+  `south.png`, `north.png`, `east.png`, `west.png` and `walking_south.gif`, `walking_north.gif`,
+  `walking_east.gif`, `walking_west.gif`. (The 3 guards of level 1 only walk left and right,
+  so `east` and `west` are the most important.)
+
+No new object is needed: the guards are the only new pictures.
+
+**Sounds in ElevenLabs (Sound Effects).** Save them in `sound/` with these names:
+
+| File | When | Length | Prompt |
+|---|---|---|---|
+| `guard_caught.mp3` | a guard touches the Weaver | ~1.5 s | `A sudden dreamlike sting: a fast reversed whoosh that ends in a deep distorted boom, with a glass shattering echo. Eerie, cinematic, lots of reverb.` |
+| `guard_near.mp3` (bonus, F5) | a guard is close | ~2 s | `Low eerie whispers of several distant voices murmuring words you can't understand. Ghostly, soft, dreamlike reverb, no music.` |
+
+The WAKE_UP screen already plays `wake_up.mp3` (the alarm): the "caught" sound plays at the same
+moment, as the Weaver is thrown out of the dream.
+
+#### Where the guards walk
+
+Each number shows the tiles one guard walks on, back and forth:
+
+```
+           0         1
+           01234567890123456789
+   row  0  WWWWWWWWWWWWWWWWWWWW
+   row  1  WP..W...........W..W
+   row  2  W...W.111111111.W..W
+   row  3  W...W..WWWWWWW..W..W
+   row  4  W...W........W.....W
+   row  5  W............W.....W
+   row  6  W.........WWWWWW...W
+   row  7  W.........W........W
+   row  8  WWWWWW....W........W
+   row  9  W.KW......W...WWWWWW
+   row 10  W..W......W22222222W
+   row 11  W..W...WWWW22222222W
+   row 12  W..W...W.......W...W
+   row 13  W..W...W.......W.D.W
+   row 14  W..WWWWW.......WWWWW
+   row 15  W...333333333333...W
+   row 16  W...333333333333...W
+   row 17  WWWWWWWWWWWWWWWWWWWW
+```
+
+| Guard | Route (column, row) | Why it is there | How to get past |
+|---|---|---|---|
+| 1 | (6, 2) → (14, 2) | The top corridor, the only way to the right side. The **easy** one, to learn how guards move | It walks on row 2 only: sneak past on row 1, against the top wall |
+| 2 | (11, 10.5) → (18, 10.5) | The big room before the door | It blocks both rows: wait in row 9 (or row 12) and cross when it's far away |
+| 3 | (4, 15.5) → (15, 15.5) | The bottom corridor, on the way to the key (crossed twice) | It blocks both rows: wait in the opening above (row 14) or in the key corridor, then go |
+
+**Why 10.5 and 15.5?** A guard in the middle of a tile only blocks one row, and a corridor 2 tiles
+wide has room to pass next to it. Row 10.5 means *"between row 10 and row 11"*: the guard walks on
+the line between the two rows and blocks the whole corridor. The side passages are always out of
+reach, so there's always a safe place to wait.
+
+Same as the MVP: don't move on before **"Done when…"** passes, and commit after each step.
+
+#### F1: One guard, as a red square (≈ 30 min)
+- Create a new file `guards.py`, and add it to the list of files at the top of `main.py`.
+- Constants at the top:
+  - `GUARD_SPEED = 2` (pixels per frame: slower than the player, who does 3)
+  - `GUARD_HITBOX_SIZE = 28` (the same as the player)
+  - `GUARD_COLOR = (220, 70, 90)` (red, until the PixelLab picture is ready)
+  - `GUARD_ROUTES`, only the first guard for now: `[((6, 2), (14, 2))]`
+- A guard is a **dictionary**: its position in pixels, the two ends of its route, and where it
+  is going. `guards = []` holds them all.
+- `tile_center(column, row)` gives the pixels of the middle of a tile:
+  `(column * TILE_SIZE + TILE_SIZE // 2, row * TILE_SIZE + TILE_SIZE // 2)`.
+- `reset_guards()` puts every guard back at the start of its route (call it once at the bottom
+  of the file, like `reset_player()` in `player.py`):
+  ```python
+  guards.clear()
+  for start, end in GUARD_ROUTES:
+      x, y = tile_center(*start)
+      guards.append({"x": x, "y": y, "start": tile_center(*start), "end": tile_center(*end),
+                     "going_to_end": True, "direction": "east"})
+  ```
+- `move_guards()` moves each guard one step towards the end it is going to:
+  ```python
+  for guard in guards:
+      if guard["going_to_end"]:
+          target_x, target_y = guard["end"]
+      else:
+          target_x, target_y = guard["start"]
+      # Arrived (or less than one step left): stand on the end and turn around
+      if abs(target_x - guard["x"]) + abs(target_y - guard["y"]) <= GUARD_SPEED:
+          guard["x"], guard["y"] = target_x, target_y
+          guard["going_to_end"] = not guard["going_to_end"]
+      # Otherwise one step towards it (a route is a straight line: only x or only y changes)
+      elif target_x > guard["x"]:
+          guard["x"] += GUARD_SPEED
+          guard["direction"] = "east"
+      # ... and the same for west (x smaller), south (y bigger) and north (y smaller)
+  ```
+- `draw_guards()` draws a red square of `GUARD_HITBOX_SIZE` centred on each guard
+  (`pygame.Rect` + `rect.center = (x, y)` + `pygame.draw.rect`, like `player_hitbox()`).
+- In `update_and_draw_dungeon()` (in `screens.py`): call `move_guards()` just after
+  `move_player(...)`, and `draw_guards()` after `draw_level(...)` but **before** `draw_player()`
+  and `draw_fog(...)`. The fog hides the guards that are far away or behind a wall. That's on
+  purpose: it's a dream, you only see them when they're close!
+
+**Done when:** a red square walks back and forth in the top corridor, without stopping, and
+stays hidden in the fog until you get close.
+
+#### F2: Caught! (≈ 20 min)
+- In `guards.py`, write `guard_catches_player()`: it returns `True` if the player's hitbox
+  touches the hitbox of a guard.
+  - `import player`, then `player.player_hitbox(player.player_x, player.player_y)`. Not
+    `from player import player_x`: that would be a copy that never moves (see `CLAUDE.md`).
+  - Two `pygame.Rect` touch when `rect_1.colliderect(rect_2)` is `True`.
+- In `update_and_draw_dungeon()`: if `guard_catches_player()`, set `game.state = "WAKE_UP"`.
+- In `reset_game()`: call `reset_guards()`, so the guards start from the beginning again in the
+  next game.
+
+**Done when:** touching the guard shows the wake up screen, and after SPACE the guard starts
+again from the start of its route.
+
+#### F3: Three guards (≈ 15 min)
+- Add guards 2 and 3 to `GUARD_ROUTES` (look at the table above):
+  ```python
+  GUARD_ROUTES = [
+      ((6, 2), (14, 2)),         # top corridor: the easy one, pass on row 1
+      ((11, 10.5), (18, 10.5)),  # big room before the door: blocks rows 10 and 11
+      ((4, 15.5), (15, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+  ]
+  ```
+- `tile_center` works with 10.5 too: it gives the line between the two rows.
+
+**Done when:** you can get the key and open the door without being caught, but you have to wait
+for the right moment several times. **Testing tip:** to check that a guard catches you, walk
+straight into it.
+
+#### F4: The guard pictures (≈ 20 min)
+- In `guards.py`, load the pictures from `grafiki/guard/` exactly like `player.py` does:
+  `guard_images` (4 PNGs) and `guard_walking_images` (4 GIFs, with `load_animation`).
+- In `draw_guards()`, replace the red square: the guards are always walking, so always show the
+  walking animation of `guard["direction"]`, centred on the guard (copy the end of
+  `draw_player()`). If a direction has no GIF, use its PNG.
+- Bonus: a soft red glow under each guard, with `make_glow(...)` from `player.py` (like the cyan
+  glow under the player, but with `color=(220, 70, 90)`). Make it once, at the top of the file.
+
+**Done when:** the guards look like dream projections and face the way they walk.
+
+#### F5: The sounds (≈ 15 min)
+- Add `"guard_caught"` to `sounds` in `assets.py`, and play it when a guard catches the player
+  (just before `game.state = "WAKE_UP"`).
+- Bonus, `guard_near`: the fog hides the guards, so whispers warn you that one is close.
+  - Add `GUARD_HEAR_DISTANCE = 200` (pixels) at the top of `guards.py`.
+  - Each frame, if a guard is closer than that to the player, play `guard_near`, but only if it
+    isn't already playing: the same trick as `locked_door_bump` in `door_try()` (`player.py`),
+    with `get_num_channels() == 0`.
+  - The distance between two points: `math.hypot(x1 - x2, y1 - y2)`.
+
+**Done when:** being caught makes a sound, and (bonus) you hear whispers before you see a guard.
+
+#### F6: Polish and balance (optional, pick what you like)
+- **The right message:** when a guard catches you, the WAKE_UP screen could say
+  `"A projection caught you!"` instead of `"Mr. Banks woke up!"`. Add a global
+  `caught_by_guard = False` in `screens.py`, set it to `True` when caught, pick the lines in
+  `draw_wake_up_screen()`, and set it back to `False` in `reset_game()`.
+- **Balance:** play 3 times. Too hard? Try `GUARD_SPEED = 1`, or more time for the dream
+  (`Dream_time`, because waiting for the guards takes time). Too easy? `GUARD_SPEED = 3`.
+- **Still too hard?** Delete guard 1 from `GUARD_ROUTES`: 2 guards are enough for level 1.
+
+**Done when:** the full game works twice in a row (caught once, win once), then commit:
+`feat: add the guards`.
+
 ---
 
 ## 7. Linking the game to the theme (for the pitch)

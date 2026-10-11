@@ -21,6 +21,7 @@ from screens import (
 #   assets.py   loading pictures and sounds, the music
 #   level.py    the dungeon map and how to draw it
 #   player.py   the player: moving, walls, key and door
+#   guards.py   the guards (projections) walking back and forth in the dungeon
 #   fog.py      the fog of war around the player
 #   screens.py  what to draw on each screen
 

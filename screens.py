@@ -7,6 +7,7 @@ from window import screen_surface, font, TEXT_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT
 from level import LEVEL_1, draw_level, reset_level
 import player
 from player import move_player, draw_player, reset_player
+from guards import move_guards, draw_guards, guard_catches_player, reset_guards
 from fog import draw_fog
 from assets import load_background, load_picture
 
@@ -161,6 +162,7 @@ def reset_game():
     dungeon_start = None
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
+    reset_guards()  # the guards are back at the start of their route
     weaving_start = None
 
 def draw_title_screen():
@@ -226,6 +228,7 @@ def update_and_draw_dungeon():
     global dungeon_start
     # The player keeps moving while an arrow key is held down
     move_player(pygame.key.get_pressed())
+    move_guards()
 
     if dungeon_start is None:
         dungeon_start = time.time()
@@ -233,6 +236,8 @@ def update_and_draw_dungeon():
     time_left = Dream_time - (time.time() - dungeon_start)
 
     draw_level(LEVEL_1)
+    # Before the fog: far away or behind a wall, the guards are hidden (it's a dream!)
+    draw_guards()
     draw_player()
     # player.player_x, not "from player import player_x": that would be a copy that never moves
     draw_fog(player.player_x, player.player_y)
@@ -241,6 +246,9 @@ def update_and_draw_dungeon():
     else:
         draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
     if time_left <= 0:
+        game.state = "WAKE_UP"
+    # A guard touched the Weaver: Mr. Banks wakes up too
+    if guard_catches_player():
         game.state = "WAKE_UP"
 
 def thread_rect(direction, index, length):
