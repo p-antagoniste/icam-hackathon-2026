@@ -29,6 +29,12 @@ TARGET_COLOR = (220, 70, 90)   # red, like the circle around his face
 client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jpeg")
 banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 
+# ---------------- WIN ----------------
+# Made with Gemini: the next morning, Mr. Banks sends the money. The bottom of the
+# picture (the front of the desk) is dark and simple, so the message goes there
+win_image = load_background("win_screen.jpeg")
+WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
+
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
@@ -283,14 +289,12 @@ def draw_weaving_screen():
         game.state = "DEMO"
 
 def draw_win_screen():
-    screen_surface.fill((120, 90, 20))
-    draw_state_name("WIN")
+    screen_surface.blit(win_image, (0, 0))
     draw_message([
         "Mission complete.",
-        "Tomorrow morning, Mr. Banks will make",
-        "a very generous transfer...",
+        "Mr. Banks made a very generous transfer...",
         "Press SPACE to play again.",
-    ])
+    ], center_y=WIN_MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         reset_game()
         game.state = "MISSION"
