@@ -203,6 +203,89 @@ after each one.
 **Recommended order if you have half a day more:** A → B → G → I. They show the theme best for the
 least code.
 
+### Improvement C: Timer, step by step
+
+The goal: when the dungeon starts, a countdown starts too. "Mr. Banks wakes up in 60 s". If it
+reaches 0 before the door is opened, the player is thrown out of the dream and has to start again.
+
+You already know the trick, because the TRANSITION screen uses it: remember the start time on
+the first frame, then compute how much time has passed. Look at `draw_transition_screen()` in
+`screens.py` before you start.
+
+Same as the MVP: don't move on before **"Done when…"** passes, and commit after each step.
+
+#### C1: Start the clock when the dungeon starts (≈ 10 min)
+- In `screens.py`, near the other constants at the top, add a new section with:
+  - `DREAM_DURATION = 60` (seconds before Mr. Banks wakes up)
+  - `dungeon_start = None` (set on the first frame of the dungeon)
+- In `update_and_draw_dungeon()`, do like `transition_start`: if `dungeon_start` is `None`, set
+  it to `time.time()`. Don't forget the `global dungeon_start` line at the top of the function,
+  or Python makes a new local variable instead of changing the one at the top of the file.
+- Compute the time left: `time_left = DREAM_DURATION - (time.time() - dungeon_start)`.
+- To check it, `print(time_left)` (the numbers show in the terminal, not in the game).
+
+**Done when:** the terminal shows numbers going down from 60 while you walk in the dungeon.
+Remove the `print` afterwards.
+
+#### C2: Show the countdown on screen (≈ 15 min)
+- At the **end** of `update_and_draw_dungeon()`, **after** `draw_fog(...)`, draw the text
+  `"Mr. Banks wakes up in 42 s"`. If you draw it before the fog, the fog hides it!
+- `int(time_left)` turns `42.738` into `42`.
+- The easiest way: `draw_state_name("...")` already draws a text with a shadow at the top of the
+  screen. Or copy what it does with `font.render(...)` if you want to choose the position.
+
+**Done when:** the countdown is readable at the top of the dungeon and goes down every second.
+
+#### C3: Make it scary at the end (≈ 15 min)
+- When `time_left` is below 10 s, draw the text in red instead of white.
+- Bonus: make it blink. The title screen already does that with
+  `math.sin(time.time() * 4)` (look at `draw_title_screen()`).
+- Add a constant for it at the top: `HURRY_TIME = 10`.
+
+**Done when:** the last 10 seconds are red (and blink, if you did the bonus).
+
+#### C4: The "wake up" screen (≈ 30 min)
+A new screen, so follow the 4 steps from `CLAUDE.md` (section *Architecture*):
+1. Add `"WAKE_UP"` at the end of `STATES` in `game.py`.
+2. In `screens.py`, write `draw_wake_up_screen()`, like `draw_win_screen()`: a background
+   colour, `draw_state_name("WAKE UP")` and a `draw_message([...])`, for example:
+   ```
+   Mr. Banks woke up!
+   You were thrown out of his dream.
+   Press SPACE to try again.
+   ```
+   (remember: the first line is the gold title and the last one blinks).
+   When SPACE is pressed: call `reset_game()`, then `game.state = "MISSION"`.
+3. In `main.py`, import `draw_wake_up_screen` and add an `elif game.state == "WAKE_UP":` branch.
+4. In `update_and_draw_dungeon()`: when `time_left <= 0`, set `game.state = "WAKE_UP"`.
+
+**Done when:** waiting 60 s in the dungeon shows the wake up screen.
+**Testing tip:** put `DREAM_DURATION = 5` while testing so you don't wait a whole minute each
+time. Put it back to 60 at the end!
+
+#### C5: Restart with a full timer (≈ 10 min)
+Try this: lose once, press SPACE, go back into the dungeon. Is the timer at 60 again? Probably
+not, because `dungeon_start` still holds the time of the **first** game.
+
+- In `reset_game()` (in `screens.py`), set `dungeon_start = None`, like `weaving_start`
+  (add it to the `global` line).
+- `reset_game()` is called both after the WIN screen and after the WAKE_UP screen, so this fixes
+  both ways of finishing a game.
+
+**Done when:** you can lose, play again, win, play again: every time the timer starts at 60.
+
+#### C6: Polish (optional, pick what you like)
+- **Sound:** make an alarm clock sound with ElevenLabs, save it as `sound/wake_up.mp3`, add it to
+  `sounds` in `assets.py` and to `SCREEN_SOUNDS` with `"WAKE_UP": "wake_up"`. It then plays by
+  itself when the screen starts.
+- **Score:** remember the time left when the door opens and show it on the WIN screen:
+  "Mission complete with 23 s to spare!"
+- **Balance:** play it several times and pick the right `DREAM_DURATION`: hard, but not
+  impossible on the first try.
+
+**Done when:** the full game works twice in a row (win once, lose once), then commit:
+`feat: add the dream timer`.
+
 ---
 
 ## 7. Linking the game to the theme (for the pitch)
