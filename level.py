@@ -46,7 +46,7 @@ LEVEL_2 = [
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 LEVELS = [LEVEL_1, LEVEL_2]
-dungeon_map = list(LEVEL_1)  # a copy of the map as it is at the start: picking up the key changes LEVEL_1
+dungeon_map = list(LEVEL_2)  # a copy of the map as it is at the start: picking up the key changes LEVEL_1
 
 # A copy of the map as it is at the start: picking up the key changes LEVEL_1
 
