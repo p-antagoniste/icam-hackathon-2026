@@ -32,6 +32,32 @@ TARGET_COLOR = (220, 70, 90)   # red, like the circle around his face
 THE_VICTORY_NUMBER = 0
 client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jpeg")
 banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
+# Made with Gemini too, from mr_banks.jpeg so it has the same style
+president_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "president.jpeg")
+
+
+TARGET_NAMES = ["Mr. Banks", "President of France"]
+target_images = [banks_image, president_image]
+MISSION_TEXTS = [
+    [   # mission 1
+        "INCOMING MESSAGE",
+        " Target:   Mr. Banks, senior banker.",
+        " Mission:  Enter his dream tonight.",
+        "           Make him believe he must transfer",
+        "           1,000,000 € to account FR76 ... 0042.",
+        " Payment:  generous.",
+        " Press SPACE to accept the mission.",
+    ],
+    [   # mission 2
+        "INCOMING MESSAGE",
+        " Target:   President of France.",
+        " Mission:  Enter his dream tonight.",
+        "           Make him believe he must give",
+        "           all his powers to me.",
+        " Payment:  much more than last time.",
+        " Press SPACE to accept the mission.",
+    ],
+]
 
 # ---------------- WIN ----------------
 # Made with Gemini: the next morning, Mr. Banks sends the money. The bottom of the
@@ -39,7 +65,7 @@ banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 win_image1 = load_background("win_screen.jpeg")
 win_image2 = load_background("find anonime.jpg")
 win_image3 = load_background("second try.jpg")
-
+win_image_mission_2 = load_background("win_screen_2.jpeg")
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
 # ---------------- WAKE UP ----------------
@@ -196,11 +222,12 @@ def draw_mission_screen():
     client_x = SCREEN_WIDTH // 4
     target_x = SCREEN_WIDTH * 3 // 4
     screen_surface.blit(client_image, client_image.get_rect(midtop=(client_x, PORTRAIT_TOP)))
-    screen_surface.blit(banks_image, banks_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
+    target_image = target_images[game.mission_number]
+    screen_surface.blit(target_image, target_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
     draw_label("The client: ???", CLIENT_COLOR, (client_x, LABEL_Y))
-    draw_label("The target: Mr. Banks", TARGET_COLOR, (target_x, LABEL_Y))
+    draw_label("The target: " + TARGET_NAMES[game.mission_number], TARGET_COLOR, (target_x, LABEL_Y))
 
-    textes = ["INCOMING MESSAGE"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","           Make him believe he must transfer","           1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
+    textes = MISSION_TEXTS[game.mission_number]
     draw_message(textes, center_y=MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         game.state = "TRANSITION"
@@ -225,7 +252,7 @@ def draw_transition_screen():
         if ring_radius > 0:
             pygame.draw.circle(screen_surface, (150, 90, 220), center, ring_radius, 3)
 
-    text = font.render("Entering the dream of Mr. Banks...", True, TEXT_COLOR)
+    text = font.render("Entering the dream of " + TARGET_NAMES[game.mission_number] + "...", True, TEXT_COLOR)
     screen_surface.blit(text, text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60)))
 
     # When the transition is over, go to the dungeon
@@ -379,6 +406,12 @@ def draw_weaving_screen():
     if not weaving_done:
         draw_message(["Weaving the dream..."], center_y=SCREEN_HEIGHT - 60)
         return  # the choice is shown once all the threads are woven
+    if game.mission_number == 1:
+        draw_message(["The dream is woven.", "Press SPACE."])
+        if pygame.K_SPACE in game.keys_down:
+            game.state = "WIN"
+        return
+
 
     textes = ["Chose the weath-in threds "," [1]   Transfer to the acount thread"," [2]   Keep the money and try to find who did this thread"," [3]   Do nothing and leave the dream","Chose a number."]
     draw_message(textes)
@@ -395,7 +428,7 @@ def draw_weaving_screen():
 def draw_wake_up_screen():
     screen_surface.blit(wake_up_image, (0, 0))
     draw_message([
-        "Mr. Banks woke up!",
+        TARGET_NAMES[game.mission_number] + " woke up!",
         "You were thrown out of his dream.",
         "Press SPACE to try again."
     ], center_y=WIN_MESSAGE_Y)
@@ -405,7 +438,14 @@ def draw_wake_up_screen():
 
 def draw_win_screen():
     global THE_VICTORY_NUMBER
-    if THE_VICTORY_NUMBER == 1:
+    if game.mission_number == 1:
+        screen_surface.blit(win_image_mission_2, (0, 0))
+        draw_message([
+            "Mission complete.",
+            "The President of France gave all his powers to ... ?",
+            "Press SPACE to go back to the title screen.",
+        ], center_y=WIN_MESSAGE_Y)
+    elif THE_VICTORY_NUMBER == 1:
         screen_surface.blit(win_image1, (0, 0))
         draw_message([
             "Mission complete.",
