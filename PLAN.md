@@ -570,6 +570,8 @@ in `loom.py`, or the arrows won't follow the music.
 - `draw_cloth()`: the vertical threads (the *warp*) are always there. One horizontal thread per
   woven arrow, from the bottom up, in the colour of its lane. Over, under, over, under: like on the
   WEAVING screen, one warp thread out of two goes back on top.
+- Before the song, the rules stay on the screen for `RULES_DURATION` seconds with a countdown,
+  then the song starts by itself (SPACE starts it sooner).
 - When the song is over (`loom_finished()`): with at least `threads_needed()` threads, SPACE goes to
   WEAVING. Otherwise SPACE plays the song again.
 - `reset_game()` calls `reset_loom()`, so the next game starts with an empty cloth.
@@ -1096,8 +1098,8 @@ defined`, and the message gives the number of the line to fix.
 start of each mission.
 
 **Done when:**
-- [ ] in mission 1, the rules panel of the loom says "at least 29 threads", like before;
-- [ ] in mission 2, it says "at least 45 threads", and the arrows are faster.
+- [ ] in mission 1, the rules panel of the loom says "Weave 29 threads to win.", like before;
+- [ ] in mission 2, it says "Weave 45 threads to win.", and the arrows are faster.
 
 **Commit:** `feat: a harder loom for mission 2`.
 
