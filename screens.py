@@ -279,15 +279,20 @@ def draw_loom_screen():
                (loom.CLOTH.centerx, loom.CLOTH.top - 25))
 
     if loom.loom_start is None:
+        # The rules for a few seconds, then the song starts by itself: hurry up!
+        # (remember the time on the first frame, like the transition)
+        if loom.rules_start is None:
+            loom.rules_start = time.time()
+        seconds_left = loom.RULES_DURATION - (time.time() - loom.rules_start)
         draw_message([
             "Weave the dream!",
-            "Arrows climb up the loom. When one reaches",
-            "the grey arrows at the top, press the same",
-            "arrow key. Each good key weaves a thread.",
-            f"Weave at least {loom.threads_needed()} threads, or the dream breaks.",
-            "Press SPACE to start weaving.",
+            "When an arrow reaches the top,",
+            "press the same arrow key.",
+            f"Weave {loom.threads_needed()} threads to win.",
+            f"Starting in {int(seconds_left) + 1}...",
         ])
-        if pygame.K_SPACE in game.keys_down:
+        # SPACE still starts it sooner, for the players who are ready
+        if seconds_left <= 0 or pygame.K_SPACE in game.keys_down:
             loom.start_loom()
         return
 

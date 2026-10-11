@@ -20,6 +20,7 @@ PASS_PERCENT = 60         # how many threads (in %) must be woven for the dream 
 FLASH_DURATION = 0.15     # seconds the grey arrow lights up after a good key
 JUDGEMENT_DURATION = 0.4  # seconds "PERFECT", "GOOD" or "MISS" stays on the screen
 END_PAUSE = 1             # seconds between the last arrow and the result
+RULES_DURATION = 5        # seconds the rules are shown, then the song starts by itself
 
 # The song: one letter per half beat. L left, D down, U up, R right, "." nothing.
 # Change it to make your own dance! (the lines are joined into one long text)
@@ -54,6 +55,7 @@ WARP_COLOR = (70, 60, 100)
 
 # One dictionary per arrow of the song, made by reset_loom()
 notes = []
+rules_start = None  # when the rules were first shown (None = not shown yet)
 loom_start = None   # when the song started (None = not started yet)
 judgement = ""      # the last "PERFECT", "GOOD" or "MISS", shown under the loom
 judgement_time = 0  # when it happened (in seconds of the song)
@@ -63,7 +65,8 @@ lane_flash = {}     # lane -> when its last good key was pressed
 
 def reset_loom():
     # The song back to the start, with no thread woven yet
-    global loom_start, judgement
+    global rules_start, loom_start, judgement
+    rules_start = None
     loom_start = None
     judgement = ""
     lane_flash.clear()
