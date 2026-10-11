@@ -3,6 +3,7 @@ import time
 import pygame
 
 import player  # player.player_x, not "from player import player_x": that copy would never move
+import game  # game.state, not "from game import state": that copy would never change
 from window import screen_surface
 from assets import load_sprite, load_animation
 from level import TILE_SIZE
@@ -23,9 +24,13 @@ GUARD_HEAR_DISTANCE = 200  # pixels: closer than this, the whispers of a guard c
 # Row 10.5 means "between row 10 and row 11": the guard walks on the line between the two
 # rows, so it blocks a corridor 2 tiles wide and you must wait for the right moment
 GUARD_ROUTES = [
-    ((6, 2), (14, 2)),         # top corridor: the easy one, pass on row 1
+    [((4, 1.5), (14, 1.5)),         # top corridor: the easy one, pass on row 1
     ((11, 10.5), (18, 10.5)),  # big room before the door: blocks rows 10 and 11
-    ((4, 15.5), (15, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+    ((4, 15.5), (15, 15.5)),],   # bottom corridor to the key: blocks rows 15 and 16
+    [((1, 15.5), (15, 15.5)),         # top corridor: the easy one, pass on row 1
+    ((1, 8.5), (19, 8.5)),  # big room before the door: blocks rows 10 and 11
+    ((15, 1), (15, 6)),
+    ((6, 1.5), (19, 1.5)),]
 ]
 
 # One dictionary per guard, filled by reset_guards() below
@@ -62,10 +67,19 @@ def reset_guards():
     global last_touch
     last_touch = None
     guards.clear()
-    for start, end in GUARD_ROUTES:
+    for start, end in GUARD_ROUTES[game.mission_number]:
         x, y = tile_center(*start)
+                # At the start, the guard looks towards the end of its route
+        if end[0] > start[0]:
+            direction = "east"
+        elif end[0] < start[0]:
+            direction = "west"
+        elif end[1] > start[1]:
+            direction = "south"
+        else:
+            direction = "north"
         guards.append({"x": x, "y": y, "start": tile_center(*start), "end": tile_center(*end),
-                       "going_to_end": True, "direction": "east"})
+                       "going_to_end": True, "direction": direction})
 
 reset_guards()
 
