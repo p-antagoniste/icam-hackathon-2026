@@ -622,15 +622,15 @@ loom (a bit harder too). After the second WIN screen, the game is over and goes 
  MISSION 2 --> TRANSITION --> DUNGEON (maze 2) --> LOOM (dance 2) --> WEAVING --> WIN 2 --SPACE--> TITLE
 ```
 
-If Inspector Grey wakes up (WAKE_UP screen), SPACE tries **mission 2 again**, not mission 1.
+If the President wakes up (WAKE_UP screen), SPACE tries **mission 2 again**, not mission 1.
 
-What is different in mission 2 (the story is only an idea: change it if you like!):
+What is different in mission 2:
 
 | | Mission 1 | Mission 2 |
 |---|---|---|
-| Target | Mr. Banks, senior banker | **Inspector Grey**, the police detective looking for the 1,000,000 € |
-| What to weave | "transfer 1,000,000 € to account FR76 ... 0042" | "the case is closed, there is no thief" |
-| The dream | Mr. Banks's house | The police station: an archive full of case files |
+| Target | Mr. Banks, senior banker | **Emmanuel Macron**, President of France |
+| What to weave | "transfer 1,000,000 € to account FR76 ... 0042" | "give all your powers to the anonymous client" |
+| The dream | Mr. Banks's house | The Élysée Palace: golden rooms and long corridors |
 | Maze | `LEVEL_1` | `LEVEL_2`: longer, more dead ends |
 | Guards | 3, walking left and right | 4, one walking up and down |
 | Loom | 47 arrows, need 60% | 69 arrows, a bit faster, need 65% |
@@ -647,10 +647,10 @@ mission 1, then the value for mission 2. And the code takes the right one with
 `[game.mission_number]`:
 
 ```python
-TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]
+TARGET_NAMES = ["Mr. Banks", "Emmanuel Macron"]
 
 TARGET_NAMES[0]                    # "Mr. Banks"
-TARGET_NAMES[1]                    # "Inspector Grey"
+TARGET_NAMES[1]                    # "Emmanuel Macron"
 TARGET_NAMES[game.mission_number]  # the name of the target of the mission being played
 ```
 
@@ -668,9 +668,9 @@ keys in VS Code:
 
 **Goal:** the story, the map of level 2 and where its guards walk, all on paper.
 
-1. **The story.** Who is the target, and why does the client want this dream? The idea above
-   follows mission 1: someone took the money of Mr. Banks, and Inspector Grey is looking for who
-   did it. If she believes the case is closed, nobody will ever find the Weaver.
+1. **The story.** The target is Emmanuel Macron, the President of France. With the money of
+   mission 1, the anonymous client wants more: **all the powers of the President**. Think about
+   what the client says in the mission message, and what happens the next morning (the ending).
 2. **The map.** On squared paper, draw a rectangle of **20 squares wide and 18 squares high**.
    Each square is one tile: `W` wall, `.` floor, `P` start, `K` key, `D` door. Check these rules:
    - [ ] the **whole border is `W`** (otherwise the game crashes when you walk to the edge);
@@ -699,35 +699,39 @@ does H2 to H4.
 To get the same style as mission 1, **give Gemini the old picture** together with the prompt.
 
 **1. The portrait of the target.** Give Gemini `grafiki/mr_banks.jpeg`, ask for a square picture,
-and save it as `grafiki/inspector_grey.jpeg`:
+and save it as `grafiki/president.jpeg`. Gemini refuses to draw some real people, like the
+President, so the picture is an **invented President of France**. That's fine: in a game, a
+picture can play the role of a real person, like an actor in a film.
 ```
 In exactly the same pixel art style as this picture: a polaroid photo held by a paperclip,
-slightly tilted, on a very dark navy blue background. In the photo: Inspector Grey, a police
-detective in her fifties, short silver hair, sharp clever eyes, a beige trench coat, holding a
-small notebook, in a police office with a board of photos linked by red strings behind her.
-A red marker circle is drawn around her face.
+slightly tilted, on a very dark navy blue background. In the photo: an invented President of
+France, a man in his sixties with grey hair and a neat grey beard, in a dark blue suit and a
+blue tie, in a golden palace office, with a French flag and a European flag behind him. A red
+marker circle is drawn around his face. A friendly cartoon character, not a real person.
 ```
 
 **2. The ending.** Give Gemini `grafiki/win_screen.jpeg`, ask for a landscape picture, and save it
 as `grafiki/win_screen_2.jpeg`:
 ```
-In exactly the same pixel art style as this picture: the next morning, Inspector Grey smiles at
-her desk and puts a big red stamp "CASE CLOSED" on a file. Glowing dream threads (gold, cyan and
-red) float around her head. On an old computer screen, a small cyan silhouette of a man with a
-hat. The bottom quarter of the picture is dark and simple, with nothing important in it.
+In exactly the same pixel art style as this picture: the next morning, the President of France
+(the man of the second picture) sits at his golden desk in a palace and signs an official paper
+with a big red seal. Glowing dream threads (gold, cyan and red) float around his head. On
+a big screen behind him, the cyan silhouette of a man with a hat and glowing eyes smiles. The
+bottom quarter of the picture is dark and simple, with nothing important in it.
 ```
-The bottom must stay empty because the message panel goes there.
+Also give Gemini `president.jpeg`, so it's the same man. The bottom must stay empty because the
+message panel goes there.
 
-**3. Bonus: the tiles of the police station** in PixelLab (40 × 40, top-down, the same settings
+**3. Bonus: the tiles of the palace** in PixelLab (40 × 40, top-down, the same settings
 as the tiles of level 1). They're used in H8:
 - `grafiki/tiles/floor_2.png`:
-  `top-down pixel art floor tile, old police station, worn dark wooden floorboards, dreamy purple light`
+  `top-down pixel art floor tile, French palace, golden wooden parquet floor with a diamond pattern, dreamy purple light`
 - `grafiki/tiles/wall_2.png`:
-  `top-down pixel art wall tile, a tall grey metal filing cabinet full of case files, seen from above, dreamy purple light`
+  `top-down pixel art wall tile, a white palace wall with golden ornaments, seen from above, dreamy purple light`
 
 No new sound or music is needed: the dance of mission 2 uses the same music.
 
-**Done when:** `inspector_grey.jpeg` and `win_screen_2.jpeg` are in `grafiki/`.
+**Done when:** `president.jpeg` and `win_screen_2.jpeg` are in `grafiki/`.
 
 #### H2: One map that can change (≈ 30 min)
 
@@ -801,7 +805,7 @@ door opens, and when you play again the key is back. Nothing new on the screen i
    already there: change the dots into your walls, and add your `P`, `K` and `D`. Don't add or
    remove letters, only change them!
    ```python
-   # Mission 2: the police station of Inspector Grey
+   # Mission 2: the Elysee Palace, in the dream of the President
    LEVEL_2 = [
        "WWWWWWWWWWWWWWWWWWWW",
        "W..................W",
@@ -905,17 +909,17 @@ You don't need to change anything else:
 **Goal:** the screens tell the story of the mission being played: the right target, the right
 name, the right ending.
 
-**File:** `screens.py`. Pictures not ready yet (H1)? Then write `inspector_image = banks_image`
+**File:** `screens.py`. Pictures not ready yet (H1)? Then write `president_image = banks_image`
 and `win_image_mission_2 = win_image1` for now, and change them when the pictures arrive.
 
 1. **The lists.** At the top, in the `MISSION` section, under the line
    `banks_image = load_picture(...)`, add:
    ```python
-   inspector_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "inspector_grey.jpeg")
+   president_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "president.jpeg")
 
    # One value per mission: [mission 1, mission 2]
-   TARGET_NAMES = ["Mr. Banks", "Inspector Grey"]
-   target_images = [banks_image, inspector_image]
+   TARGET_NAMES = ["Mr. Banks", "Emmanuel Macron"]
+   target_images = [banks_image, president_image]
    MISSION_TEXTS = [
        [   # mission 1
            "INCOMING MESSAGE",
@@ -928,11 +932,11 @@ and `win_image_mission_2 = win_image1` for now, and change them when the picture
        ],
        [   # mission 2
            "INCOMING MESSAGE",
-           " Target:   Inspector Grey, police detective.",
-           " Mission:  Enter her dream tonight.",
-           "           She is looking for the 1,000,000 €.",
-           "           Make her believe the case is closed.",
-           " Payment:  double.",
+           " Target:   Emmanuel Macron, President of France.",
+           " Mission:  Enter his dream tonight.",
+           "           Make him believe he must give",
+           "           all his powers to me.",
+           " Payment:  much more than last time.",
            " Press SPACE to accept the mission.",
        ],
    ]
@@ -954,8 +958,7 @@ and `win_image_mission_2 = win_image1` for now, and change them when the picture
 3. **TRANSITION screen.** In `draw_transition_screen()`, `"Entering the dream of Mr. Banks..."`
    becomes `"Entering the dream of " + TARGET_NAMES[game.mission_number] + "..."`.
 4. **WAKE_UP screen.** In `draw_wake_up_screen()`, `"Mr. Banks woke up!"` becomes
-   `TARGET_NAMES[game.mission_number] + " woke up!"`, and `"You were thrown out of his dream."`
-   becomes `"You were thrown out of the dream."` (it's *her* dream in mission 2).
+   `TARGET_NAMES[game.mission_number] + " woke up!"`.
 5. **WEAVING screen.** The choice 1/2/3 is about the transfer: it's only for mission 1. In
    `draw_weaving_screen()`, just **before** the line `textes = ["Chose the weath-in threds ", ...]`,
    add:
@@ -973,16 +976,16 @@ and `win_image_mission_2 = win_image1` for now, and change them when the picture
        if game.mission_number == 1:
            screen_surface.blit(win_image_mission_2, (0, 0))
            draw_message([
-               "Case closed.",
-               "Inspector Grey stopped looking for the thief...",
+               "Mission complete.",
+               "The President gave all his powers to... ???",
                "Press SPACE to finish the game.",
            ], center_y=WIN_MESSAGE_Y)
    ```
    The 3 endings of mission 1 stay as they are, under it.
 
 **Done when:**
-- [ ] mission 2 shows Inspector Grey, her mission text, her name in the transition, no choice
-      after the weaving, and her ending;
+- [ ] mission 2 shows the President, his mission text, his name in the transition, no choice
+      after the weaving, and his ending;
 - [ ] mission 1 looks exactly like before.
 
 **Commit:** `feat: the story of mission 2`.
@@ -1111,7 +1114,7 @@ start of each mission.
   `GUARD_SPEED` in `move_guards()` becomes `GUARD_SPEEDS[game.mission_number]`.
 - **Show the mission.** `draw_label("Mission 2", ...)` in a corner of the dungeon, **after**
   `draw_fog(...)` (or the fog hides it!).
-- **The tiles of the police station** (from H1). In `level.py`, `floor_image` becomes a list of
+- **The tiles of the palace** (from H1). In `level.py`, `floor_image` becomes a list of
   2 pictures, `floor_images = [..., ...]`, and `draw_level()` uses
   `floor_images[game.mission_number]`. Same idea for the wall.
 - **The story follows your choice.** The text of mission 2 can change with the ending of
