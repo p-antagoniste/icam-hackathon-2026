@@ -168,7 +168,7 @@ def reset_game():
     global dungeon_start, time_lost
     dungeon_start = None
     time_lost = 0
-    load_level(0)   # the key is back in the maze
+    load_level(game.mission_number)   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     reset_guards()  # the guards are back at the start of their route
     loom.reset_loom()  # the weaving song is back at the start
@@ -410,32 +410,35 @@ def draw_win_screen():
         draw_message([
             "Mission complete.",
             "Mr. Banks made a very generous transfer...",
-            "Press SPACE to play again.",
+            "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
-        if pygame.K_SPACE in game.keys_down:
-            reset_game()
-            game.state = "MISSION"
+
     elif THE_VICTORY_NUMBER == 2:
         screen_surface.blit(win_image2, (0, 0))
         draw_message([
             "When Mr. Banks found out...",
             "that someone tried to steal his money.",
             "he started searching the thief",
-            "Press SPACE to play again.",
+            "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
-        if pygame.K_SPACE in game.keys_down:
-            reset_game()
-            game.state = "MISSION"
+
     elif THE_VICTORY_NUMBER == 3:
         screen_surface.blit(win_image3, (0, 0))
         draw_message([
             "You didn't do what he asked you.",
             "but he gives you another chance to be pardoned.",
-            "Press SPACE to play again.",
+            "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
-        if pygame.K_SPACE in game.keys_down:
+    # SPACE: the next mission, or the end of the game after the last mission
+    if pygame.K_SPACE in game.keys_down:
+        if game.mission_number < len(LEVELS) - 1:
+            game.mission_number = game.mission_number + 1
             reset_game()
             game.state = "MISSION"
+        else:
+            game.mission_number = 0
+            reset_game()
+            game.state = "TITLE"
 
 def draw_demo_screen():
     screen_surface.fill((20, 90, 90))
