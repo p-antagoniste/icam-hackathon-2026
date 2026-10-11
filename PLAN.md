@@ -194,7 +194,7 @@ after each one.
 | C | **Timer** | ★☆☆ | "Mr. Banks wakes up in 60 s." If time runs out you're thrown out of the dream (game over → restart) |
 | D | **Sound** | ★☆☆ | Dreamy background music + sounds for "key picked up" and "door opened" (`pygame.mixer`) |
 | E | **Memory fragments** | ★★☆ | Use the 3 thread spools (`grafiki/objects/thread_*.png`): collect 3 "threads" before the door opens |
-| F | **Guards (projections)** | ★★☆ | As in *Inception*, the mind defends itself: enemies walk back and forth along a corridor. Touching one wakes the banker up → restart |
+| F | **Guards (projections)** | ★★☆ | As in *Inception*, the mind defends itself: enemies walk back and forth along a corridor. Touching one costs 20 s: the banker wakes up sooner |
 | G | **Weaving mini-game** | ★★☆ | At the door, press a sequence of arrows shown on screen (↑ → ↓ ←…) to weave the threads. Each correct key adds a coloured thread |
 | H | **Level 2 / dream layers** | ★★☆ | A second map = "a deeper dream". Easy once levels are lists of strings: `LEVELS = [LEVEL_1, LEVEL_2]` |
 | I | **Moral choice + 2 endings** | ★★☆ | At the door: "Weave the ordered dream" or "Weave a warning dream". One ending reveals the client was a thief, the other that the banker was the criminal… |
@@ -289,11 +289,14 @@ not, because `dungeon_start` still holds the time of the **first** game.
 ### Improvement F: Guards (projections), step by step
 
 The goal: like in *Inception*, Mr. Banks's mind defends itself. **3 guards** (dream
-"projections") walk back and forth, always on the same line. If one touches the Weaver,
-Mr. Banks wakes up: it's the same WAKE_UP screen as when the timer runs out.
+"projections") walk back and forth, always on the same line. If one touches the Weaver, it's
+not game over: Mr. Banks sleeps less deeply and **20 seconds disappear from the timer**. The
+game only ends when the timer reaches 0 (the WAKE_UP screen from improvement C), so 3 touches
+in a 60 s dream is already too many.
 
 Level 1 must stay easy, so the guards are **slow, never chase you, and never leave their line**.
-The only trick is to wait for the right moment, hidden in a side passage.
+The trick is to wait for the right moment, hidden in a side passage. Or to rush through a guard
+when you have time to spare!
 
 #### F0: What to create first (PixelLab and ElevenLabs)
 
@@ -326,11 +329,12 @@ No new object is needed: the guards are the only new pictures.
 
 | File | When | Length | Prompt |
 |---|---|---|---|
-| `guard_caught.mp3` | a guard touches the Weaver | ~1.5 s | `A sudden dreamlike sting: a fast reversed whoosh that ends in a deep distorted boom, with a glass shattering echo. Eerie, cinematic, lots of reverb.` |
+| `guard_touch.mp3` | a guard touches the Weaver: 20 s are lost | ~1.5 s | `A sudden dreamlike jolt: a sharp reversed whoosh, then an old clock ticking very fast as if time jumps forward, ending with one deep heartbeat thump. Eerie, cinematic, reverb, no music.` |
 | `guard_near.mp3` (bonus, F5) | a guard is close | ~2 s | `Low eerie whispers of several distant voices murmuring words you can't understand. Ghostly, soft, dreamlike reverb, no music.` |
 
-The WAKE_UP screen already plays `wake_up.mp3` (the alarm): the "caught" sound plays at the same
-moment, as the Weaver is thrown out of the dream.
+The touch is not the end of the game: the sound plays while you keep walking, so it must be short
+and must not sound like the alarm clock (`wake_up.mp3` is kept for when Mr. Banks really wakes up).
+It should sound like *"time just jumped forward"*.
 
 #### Where the guards walk
 
@@ -368,7 +372,8 @@ Each number shows the tiles one guard walks on, back and forth:
 **Why 10.5 and 15.5?** A guard in the middle of a tile only blocks one row, and a corridor 2 tiles
 wide has room to pass next to it. Row 10.5 means *"between row 10 and row 11"*: the guard walks on
 the line between the two rows and blocks the whole corridor. The side passages are always out of
-reach, so there's always a safe place to wait.
+reach, so there's always a safe place to wait. In a hurry, you can also walk straight through a
+guard: it costs 20 s.
 
 Same as the MVP: don't move on before **"Done when…"** passes, and commit after each step.
 
@@ -419,18 +424,38 @@ Same as the MVP: don't move on before **"Done when…"** passes, and commit afte
 **Done when:** a red square walks back and forth in the top corridor, without stopping, and
 stays hidden in the fog until you get close.
 
-#### F2: Caught! (≈ 20 min)
-- In `guards.py`, write `guard_catches_player()`: it returns `True` if the player's hitbox
-  touches the hitbox of a guard.
-  - `import player`, then `player.player_hitbox(player.player_x, player.player_y)`. Not
-    `from player import player_x`: that would be a copy that never moves (see `CLAUDE.md`).
-  - Two `pygame.Rect` touch when `rect_1.colliderect(rect_2)` is `True`.
-- In `update_and_draw_dungeon()`: if `guard_catches_player()`, set `game.state = "WAKE_UP"`.
-- In `reset_game()`: call `reset_guards()`, so the guards start from the beginning again in the
-  next game.
+#### F2: A touch costs 20 seconds (≈ 30 min)
+- New constants at the top of `guards.py`:
+  - `GUARD_PENALTY = 20` (seconds of dream lost when a guard touches the Weaver)
+  - `GUARD_PROTECTION = 2` (seconds after a touch when the guards can't touch again)
+  - and a global `last_touch = None` (when a guard last touched the Weaver).
+- **Why a protection?** A guard needs about half a second to walk through the Weaver: that's
+  30 frames. Without it, the guard would take 20 s at *every* frame, so 600 s at once!
+- `player_is_protected()` returns `True` while less than `GUARD_PROTECTION` seconds have passed
+  since `last_touch` (and `False` if `last_touch` is `None`).
+- `guard_touches_player()` returns `True` only at the start of a touch:
+  - while `player_is_protected()`, return `False` straight away;
+  - otherwise, check if the player's hitbox touches the hitbox of a guard. `import player`, then
+    `player.player_hitbox(player.player_x, player.player_y)`. Not `from player import player_x`:
+    that would be a copy that never moves (see `CLAUDE.md`). Two `pygame.Rect` touch when
+    `rect_1.colliderect(rect_2)` is `True`;
+  - when they touch, set `last_touch = time.time()` (with `global last_touch`) and return `True`.
+- In `screens.py`, add a global `time_lost = 0` next to `dungeon_start`. In
+  `update_and_draw_dungeon()`:
+  - if `guard_touches_player()`, add `GUARD_PENALTY` to `time_lost`;
+  - take it away from the time left:
+    `time_left = Dream_time - (time.time() - dungeon_start) - time_lost`;
+  - there's nothing else to do for the end: when `time_left` reaches 0, the timer already goes
+    to WAKE_UP.
+- Show that something happened, while `player_is_protected()`:
+  - the player blinks: don't call `draw_player()` one tenth of a second out of two
+    (`int(time.time() * 10) % 2 == 0`);
+  - a red `"-20 s"` above the player, with `draw_label(...)`, **after** `draw_fog(...)`.
+- In `reset_game()`: set `time_lost = 0` and call `reset_guards()` (which also sets `last_touch`
+  back to `None`), so the next game starts fresh.
 
-**Done when:** touching the guard shows the wake up screen, and after SPACE the guard starts
-again from the start of its route.
+**Done when:** touching the guard takes exactly 20 s from the timer (not more), the player
+blinks for 2 s, 3 touches show the wake up screen, and after SPACE the timer is full again.
 
 #### F3: Three guards (≈ 15 min)
 - Add guards 2 and 3 to `GUARD_ROUTES` (look at the table above):
@@ -443,9 +468,9 @@ again from the start of its route.
   ```
 - `tile_center` works with 10.5 too: it gives the line between the two rows.
 
-**Done when:** you can get the key and open the door without being caught, but you have to wait
-for the right moment several times. **Testing tip:** to check that a guard catches you, walk
-straight into it.
+**Done when:** you can get the key and open the door without being touched, but you have to wait
+for the right moment several times. **Testing tip:** to check a guard, walk straight into it and
+look at the timer.
 
 #### F4: The guard pictures (≈ 20 min)
 - In `guards.py`, load the pictures from `grafiki/guard/` exactly like `player.py` does:
@@ -459,8 +484,8 @@ straight into it.
 **Done when:** the guards look like dream projections and face the way they walk.
 
 #### F5: The sounds (≈ 15 min)
-- Add `"guard_caught"` to `sounds` in `assets.py`, and play it when a guard catches the player
-  (just before `game.state = "WAKE_UP"`).
+- Add `"guard_touch"` to `sounds` in `assets.py`, and play it when a guard touches the player
+  (next to `time_lost += GUARD_PENALTY`). Thanks to the protection, it plays only once per touch.
 - Bonus, `guard_near`: the fog hides the guards, so whispers warn you that one is close.
   - Add `GUARD_HEAR_DISTANCE = 200` (pixels) at the top of `guards.py`.
   - Each frame, if a guard is closer than that to the player, play `guard_near`, but only if it
@@ -468,19 +493,20 @@ straight into it.
     with `get_num_channels() == 0`.
   - The distance between two points: `math.hypot(x1 - x2, y1 - y2)`.
 
-**Done when:** being caught makes a sound, and (bonus) you hear whispers before you see a guard.
+**Done when:** a touch makes a sound (once, not every frame), and (bonus) you hear whispers
+before you see a guard.
 
 #### F6: Polish and balance (optional, pick what you like)
-- **The right message:** when a guard catches you, the WAKE_UP screen could say
-  `"A projection caught you!"` instead of `"Mr. Banks woke up!"`. Add a global
-  `caught_by_guard = False` in `screens.py`, set it to `True` when caught, pick the lines in
-  `draw_wake_up_screen()`, and set it back to `False` in `reset_game()`.
-- **Balance:** play 3 times. Too hard? Try `GUARD_SPEED = 1`, or more time for the dream
-  (`Dream_time`, because waiting for the guards takes time). Too easy? `GUARD_SPEED = 3`.
+- **The right message:** if the guards took some time, the WAKE_UP screen could say it, for
+  example `"The projections took 40 s of the dream!"` (use `time_lost` from `screens.py`, but
+  show it before `reset_game()` puts it back to 0).
+- **Balance:** play 3 times. Too hard? Try `GUARD_PENALTY = 10`, `GUARD_SPEED = 1`, or more time
+  for the dream (`Dream_time`, because waiting for the guards takes time). Too easy?
+  `GUARD_PENALTY = 30` or `GUARD_SPEED = 3`.
 - **Still too hard?** Delete guard 1 from `GUARD_ROUTES`: 2 guards are enough for level 1.
 
-**Done when:** the full game works twice in a row (caught once, win once), then commit:
-`feat: add the guards`.
+**Done when:** the full game works twice in a row (touched once and still win, then lose because
+of the guards), then commit: `feat: add the guards`.
 
 ---
 

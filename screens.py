@@ -7,9 +7,10 @@ from window import screen_surface, font, TEXT_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT
 from level import LEVEL_1, draw_level, reset_level
 import player
 from player import move_player, draw_player, reset_player
-from guards import move_guards, draw_guards, guard_catches_player, reset_guards
+from guards import (move_guards, draw_guards, guard_touches_player, player_is_protected,
+                    guard_is_near, reset_guards, GUARD_PENALTY)
 from fog import draw_fog
-from assets import load_background, load_picture
+from assets import load_background, load_picture, sounds
 
 # One function per state, called every frame by the game loop in main.py
 
@@ -81,6 +82,7 @@ MESSAGE_BORDER_COLOR = (150, 90, 220)
 message_fonts = {}  # one font per size, made only once
 Dream_time = 60
 dungeon_start = None
+time_lost = 0  # seconds taken away by the guards: Mr. Banks wakes up sooner
 # ---------------- FUNCTIONS ----------------
 
 def message_font(size):
@@ -162,8 +164,9 @@ def draw_state_name(name, color=TEXT_COLOR):
 def reset_game():
     # Everything back to the start, to play again
     global weaving_start
-    global dungeon_start
+    global dungeon_start, time_lost
     dungeon_start = None
+    time_lost = 0
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     reset_guards()  # the guards are back at the start of their route
@@ -229,7 +232,7 @@ def draw_transition_screen():
         game.state = "DUNGEON"
 
 def update_and_draw_dungeon():
-    global dungeon_start
+    global dungeon_start, time_lost
     # The player keeps moving while an arrow key is held down
     move_player(pygame.key.get_pressed())
     move_guards()
@@ -237,22 +240,32 @@ def update_and_draw_dungeon():
     if dungeon_start is None:
         dungeon_start = time.time()
 
-    time_left = Dream_time - (time.time() - dungeon_start)
+    # A guard touched the Weaver: Mr. Banks sleeps less deeply, he will wake up sooner
+    if guard_touches_player():
+        time_lost += GUARD_PENALTY
+        sounds["guard_touch"].play()
+    # Whispers while a guard is close. get_num_channels() is 0 when the sound is not already
+    # playing: a new whisper starts only when the last one is over (like the locked door)
+    if guard_is_near() and sounds["guard_near"].get_num_channels() == 0:
+        sounds["guard_near"].play()
+
+    time_left = Dream_time - (time.time() - dungeon_start) - time_lost
 
     draw_level(LEVEL_1)
     # Before the fog: far away or behind a wall, the guards are hidden (it's a dream!)
     draw_guards()
-    draw_player()
+    # Just after a touch the player blinks (hidden 1/10 s out of 2) while being protected
+    if not (player_is_protected() and int(time.time() * 10) % 2 == 0):
+        draw_player()
     # player.player_x, not "from player import player_x": that would be a copy that never moves
     draw_fog(player.player_x, player.player_y)
+    if player_is_protected():
+        draw_label(f"-{GUARD_PENALTY} s", (255, 0, 0), (player.player_x, player.player_y - 40))
     if time_left <= 16:
         draw_state_name(f'Time left: {int(time_left)}', color=(255, 0, 0))
     else:
         draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
     if time_left <= 0:
-        game.state = "WAKE_UP"
-    # A guard touched the Weaver: Mr. Banks wakes up too
-    if guard_catches_player():
         game.state = "WAKE_UP"
 
 def thread_rect(direction, index, length):

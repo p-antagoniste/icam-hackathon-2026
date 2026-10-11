@@ -54,6 +54,8 @@ sounds = {
     "entering_dream": load_sound("entering_dream"),
     "weaving_dream": load_sound("weaving_dream"),
     "wake_up": load_sound("wake_up"),
+    "guard_touch": load_sound("guard_touch"),
+    "guard_near": load_sound("guard_near"),
 }
 
 # Played once when a screen starts
