@@ -146,8 +146,7 @@ def draw_state_name(name, color):
     text = font.render(name, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
 
-def draw_state_name(name):
-    draw_label(name, TEXT_COLOR, (SCREEN_WIDTH // 2, 40))
+
 
 def reset_game():
     # Everything back to the start, to play again
@@ -277,7 +276,7 @@ def draw_weaving_screen():
 
     screen_surface.fill((20, 90, 90))
     draw_threads(elapsed)
-    draw_state_name("WEAVING")
+    draw_state_name("WEAVING", color=(192, 242, 57))
 
     if not weaving_done:
         draw_message(["Weaving the dream..."], center_y=SCREEN_HEIGHT - 60)
@@ -305,7 +304,7 @@ def draw_win_screen():
 
 def draw_demo_screen():
     screen_surface.fill((20, 90, 90))
-    draw_state_name("DEMO")
+    draw_state_name("DEMO", color=(242, 52, 119))
     textes = ["Sorry you are in the demo ","buy the full game","to chose this way","if you bought it call this number: 1-800-123-4567","if you want to countinue the demo press SPACE to go back to the weaving screen"]
     draw_message(textes)
     if pygame.K_SPACE in game.keys_down:
