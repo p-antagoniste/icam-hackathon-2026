@@ -39,6 +39,11 @@ win_image3 = load_background("second try.jpg")
 
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
+# ---------------- WAKE UP ----------------
+# Made with Gemini: Mr. Banks wakes up and the dream threads break. Like the win
+# picture, its bottom is dark and empty, so the message goes at WIN_MESSAGE_Y too
+wake_up_image = load_background("wake_up.jpeg")
+
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
 transition_start = None  # set on the first frame of the transition
@@ -156,6 +161,8 @@ def draw_state_name(name, color=TEXT_COLOR):
 def reset_game():
     # Everything back to the start, to play again
     global weaving_start
+    global dungeon_start
+    dungeon_start = None
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     weaving_start = None
@@ -237,6 +244,8 @@ def update_and_draw_dungeon():
         draw_state_name(f'Time left: {int(time_left)}', color=(255, 0, 0))
     else:
         draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
+    if time_left <= 0:
+        game.state = "WAKE_UP"
 
 def thread_rect(direction, index, length):
     # The rectangle of a thread, from the top (vertical) or the left (horizontal) edge
@@ -308,11 +317,11 @@ def draw_weaving_screen():
         game.state = "WIN"
 
 def draw_wake_up_screen():
-    screen_surface.blit(win_image1, (0, 0))
+    screen_surface.blit(wake_up_image, (0, 0))
     draw_message([
-        "Mission complete.",
-        "Mr. Banks made a very generous transfer...",
-        "Press SPACE to play again.",
+        "Mr. Banks woke up!",
+        "You were thrown out of his dream.",
+        "Press SPACE to try again."
     ], center_y=WIN_MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         reset_game()
