@@ -152,6 +152,8 @@ def draw_state_name(name, color=TEXT_COLOR):
 def reset_game():
     # Everything back to the start, to play again
     global weaving_start
+    global dungeon_start
+    dungeon_start = None
     reset_level()   # the key is back in the maze
     reset_player()  # the player is back on P, without the key
     weaving_start = None
