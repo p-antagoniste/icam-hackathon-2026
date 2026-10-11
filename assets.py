@@ -22,6 +22,12 @@ def load_background(*path_parts):
     visible.center = (size[0] // 2, size[1] // 2)
     return picture.subsurface(visible).copy()
 
+def load_picture(size, *path_parts):
+    # Load a picture without transparency (like a JPEG) from the grafiki folder,
+    # resized to size = (width, height) in pixels
+    picture = pygame.image.load(os.path.join(BASE_DIR, "grafiki", *path_parts)).convert()
+    return pygame.transform.smoothscale(picture, size)
+
 def load_animation(*path_parts):
     # Load every picture of an animated GIF from the grafiki folder, keeping their transparency
     # (load_animation gives (picture, duration) pairs: only the pictures are kept)

@@ -8,13 +8,32 @@ from level import LEVEL_1, draw_level, reset_level
 import player
 from player import move_player, draw_player, reset_player
 from fog import draw_fog
-from assets import load_background
+from assets import load_background, load_picture
 
 # One function per state, called every frame by the game loop in main.py
 
 # ---------------- TITLE ----------------
 # Made with Gemini: the bottom of the picture is left empty for the "Press SPACE" text
 title_image = load_background("title_screen.jpeg")
+
+# ---------------- MISSION ----------------
+# Made with Gemini too. Their dark background is the same colour as the screen,
+# so only the video call and the photo can be seen
+PORTRAIT_SIZE = 300   # pixels (the pictures are 1024 x 1024, made smaller)
+PORTRAIT_TOP = 30     # pixels from the top of the screen
+LABEL_Y = 330         # where the text under the pictures goes
+MESSAGE_Y = 530       # the middle of the mission text, under the pictures
+MISSION_BACKGROUND = (11, 7, 31)  # the colour around the pictures, so their edges can't be seen
+CLIENT_COLOR = (80, 200, 255)  # cyan, like the video call
+TARGET_COLOR = (220, 70, 90)   # red, like the circle around his face
+client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jpeg")
+banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
+
+# ---------------- WIN ----------------
+# Made with Gemini: the next morning, Mr. Banks sends the money. The bottom of the
+# picture (the front of the desk) is dark and simple, so the message goes there
+win_image = load_background("win_screen.jpeg")
+WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
@@ -126,6 +145,9 @@ def draw_state_name(name, color):
     screen_surface.blit(shadow, shadow.get_rect(center=(center[0] + 2, center[1] + 2)))
     text = font.render(name, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
+
+def draw_state_name(name):
+    draw_label(name, TEXT_COLOR, (SCREEN_WIDTH // 2, 40))
 
 def reset_game():
     # Everything back to the start, to play again
@@ -271,14 +293,12 @@ def draw_weaving_screen():
         game.state = "DEMO"
 
 def draw_win_screen():
-    screen_surface.fill((120, 90, 20))
-    draw_state_name("WIN", color=(230, 190, 90))
+    screen_surface.blit(win_image, (0, 0))
     draw_message([
         "Mission complete.",
-        "Tomorrow morning, Mr. Banks will make",
-        "a very generous transfer...",
+        "Mr. Banks made a very generous transfer...",
         "Press SPACE to play again.",
-    ])
+    ], center_y=WIN_MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         reset_game()
         game.state = "MISSION"
