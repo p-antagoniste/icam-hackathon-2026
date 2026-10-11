@@ -8,13 +8,26 @@ from level import LEVEL_1, draw_level, reset_level
 import player
 from player import move_player, draw_player, reset_player
 from fog import draw_fog
-from assets import load_background
+from assets import load_background, load_picture
 
 # One function per state, called every frame by the game loop in main.py
 
 # ---------------- TITLE ----------------
 # Made with Gemini: the bottom of the picture is left empty for the "Press SPACE" text
 title_image = load_background("title_screen.jpeg")
+
+# ---------------- MISSION ----------------
+# Made with Gemini too. Their dark background is the same colour as the screen,
+# so only the video call and the photo can be seen
+PORTRAIT_SIZE = 300   # pixels (the pictures are 1024 x 1024, made smaller)
+PORTRAIT_TOP = 30     # pixels from the top of the screen
+LABEL_Y = 330         # where the text under the pictures goes
+MESSAGE_Y = 530       # the middle of the mission text, under the pictures
+MISSION_BACKGROUND = (11, 7, 31)  # the colour around the pictures, so their edges can't be seen
+CLIENT_COLOR = (80, 200, 255)  # cyan, like the video call
+TARGET_COLOR = (220, 70, 90)   # red, like the circle around his face
+client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jpeg")
+banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
@@ -118,13 +131,15 @@ def draw_message(lines, center_y=SCREEN_HEIGHT // 2):
     for picture, y in pictures:
         screen_surface.blit(picture, (panel.left + MESSAGE_PADDING, panel.top + MESSAGE_PADDING + y))
 
-def draw_state_name(name):
-    # A dark shadow under the white text, so it can be read on the threads too
-    center = (SCREEN_WIDTH // 2, 40)
-    shadow = font.render(name, True, (10, 5, 25))
+def draw_label(words, color, center):
+    # A dark shadow under the text, so it can be read on any background
+    shadow = font.render(words, True, (10, 5, 25))
     screen_surface.blit(shadow, shadow.get_rect(center=(center[0] + 2, center[1] + 2)))
-    text = font.render(name, True, TEXT_COLOR)
+    text = font.render(words, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
+
+def draw_state_name(name):
+    draw_label(name, TEXT_COLOR, (SCREEN_WIDTH // 2, 40))
 
 def reset_game():
     # Everything back to the start, to play again
@@ -149,10 +164,18 @@ def draw_title_screen():
         game.state = "MISSION"
 
 def draw_mission_screen():
-    screen_surface.fill((15, 10, 30))
-    draw_state_name("MISSION")
-    textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
-    draw_message(textes)
+    screen_surface.fill(MISSION_BACKGROUND)
+
+    # Who sends the mission on the left, who it is about on the right
+    client_x = SCREEN_WIDTH // 4
+    target_x = SCREEN_WIDTH * 3 // 4
+    screen_surface.blit(client_image, client_image.get_rect(midtop=(client_x, PORTRAIT_TOP)))
+    screen_surface.blit(banks_image, banks_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
+    draw_label("The client: ???", CLIENT_COLOR, (client_x, LABEL_Y))
+    draw_label("The target: Mr. Banks", TARGET_COLOR, (target_x, LABEL_Y))
+
+    textes = ["INCOMING MESSAGE"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","           Make him believe he must transfer","           1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
+    draw_message(textes, center_y=MESSAGE_Y)
     if pygame.K_SPACE in game.keys_down:
         game.state = "TRANSITION"
 
