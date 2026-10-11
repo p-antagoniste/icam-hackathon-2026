@@ -13,7 +13,8 @@ from screens import (
     draw_weaving_screen,
     draw_win_screen,
     draw_demo_screen,
-    draw_wake_up_screen
+    draw_wake_up_screen,
+    draw_reveal_screen
 )
 
 # The game is split in small files:
@@ -68,6 +69,8 @@ while game_status:
         draw_demo_screen()
     elif game.state == "WAKE_UP":
         draw_wake_up_screen()
+    elif game.state == "REVEAL":
+        draw_reveal_screen()
 
     pygame.display.update()
     clock.tick(60)

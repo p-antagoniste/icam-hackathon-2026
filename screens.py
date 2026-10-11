@@ -68,6 +68,12 @@ win_image3 = load_background("second try.jpg")
 win_image_mission_2 = load_background("win_screen_2.jpeg")
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
+# ---------------- REVEAL ----------------
+# Made with Gemini, from a photo of Firas and anonymous_client.jpeg: at the very end, the
+# client takes off his hat. Its bottom is dark too, so the message goes there
+reveal_image = load_background("firas_reveal2.jpeg")
+REVEAL_MESSAGE_Y = 595  # a bit higher than WIN_MESSAGE_Y: the message has one more line
+
 # ---------------- WAKE UP ----------------
 # Made with Gemini: Mr. Banks wakes up and the dream threads break. Like the win
 # picture, its bottom is dark and empty, so the message goes at WIN_MESSAGE_Y too
@@ -446,7 +452,7 @@ def draw_win_screen():
         draw_message([
             "Mission complete.",
             "The President of France gave all his powers to ... ?",
-            "Press SPACE to go back to the title screen.",
+            "Press SPACE to find out who the client was.",
         ], center_y=WIN_MESSAGE_Y)
     elif THE_VICTORY_NUMBER == 1:
         screen_surface.blit(win_image1, (0, 0))
@@ -472,16 +478,29 @@ def draw_win_screen():
             "but he gives you another chance to be pardoned.",
             "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
-    # SPACE: the next mission, or the end of the game after the last mission
+    # SPACE: the next mission, or who the client was after the last mission
     if pygame.K_SPACE in game.keys_down:
         if game.mission_number < len(LEVELS) - 1:
             game.mission_number = game.mission_number + 1
             reset_game()
             game.state = "MISSION"
         else:
-            game.mission_number = 0
-            reset_game()
-            game.state = "TITLE"
+            game.state = "REVEAL"
+
+def draw_reveal_screen():
+    # The end of the game: the anonymous client was Firas all along
+    screen_surface.blit(reveal_image, (0, 0))
+    draw_message([
+        "The client was... FIRAS!",
+        "It was him all along!",
+        "Now he has all the money and all the power.",
+        "Press SPACE to go back to the title screen.",
+    ], center_y=REVEAL_MESSAGE_Y)
+    # The game starts again from mission 1
+    if pygame.K_SPACE in game.keys_down:
+        game.mission_number = 0
+        reset_game()
+        game.state = "TITLE"
 
 def draw_demo_screen():
     screen_surface.fill((20, 90, 90))
