@@ -297,6 +297,17 @@ def draw_weaving_screen():
     elif pygame.K_3 in game.keys_down:
         game.state = "DEMO"
 
+def draw_wake_up_screen():
+    screen_surface.blit(win_image, (0, 0))
+    draw_message([
+        "Mission complete.",
+        "Mr. Banks made a very generous transfer...",
+        "Press SPACE to play again.",
+    ], center_y=WIN_MESSAGE_Y)
+    if pygame.K_SPACE in game.keys_down:
+        reset_game()
+        game.state = "MISSION"
+
 def draw_win_screen():
     screen_surface.blit(win_image, (0, 0))
     draw_message([
