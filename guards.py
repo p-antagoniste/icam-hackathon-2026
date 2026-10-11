@@ -15,7 +15,7 @@ GUARD_SPEED = 2          # pixels per frame: slower than the player (3)
 GUARD_HITBOX_SIZE = 28   # the same as the player
 GUARD_FRAME_DURATION = 0.15  # seconds per picture of the walk: slower than the player (0.1)
 GUARD_GLOW_COLOR = (220, 70, 90)  # red, the opposite of the cyan glow of the player
-GUARD_PENALTY = 20       # seconds of dream lost when a guard touches the Weaver
+GUARD_PENALTY = 15       # seconds of dream lost when a guard touches the Weaver
 GUARD_PROTECTION = 2     # seconds after a touch when the guards can't touch the Weaver again
 GUARD_HEAR_DISTANCE = 200  # pixels: closer than this, the whispers of a guard can be heard
 
