@@ -50,7 +50,8 @@ MESSAGE_TITLE_COLOR = (230, 190, 90)                # gold, for the first line
 MESSAGE_PANEL_COLOR = (10, 5, 25, 235)              # very dark purple, a bit transparent
 MESSAGE_BORDER_COLOR = (150, 90, 220)
 message_fonts = {}  # one font per size, made only once
-
+Dream_time = 60
+dungeon_start = None
 # ---------------- FUNCTIONS ----------------
 
 def message_font(size):
@@ -118,12 +119,12 @@ def draw_message(lines, center_y=SCREEN_HEIGHT // 2):
     for picture, y in pictures:
         screen_surface.blit(picture, (panel.left + MESSAGE_PADDING, panel.top + MESSAGE_PADDING + y))
 
-def draw_state_name(name):
+def draw_state_name(name, color):
     # A dark shadow under the white text, so it can be read on the threads too
     center = (SCREEN_WIDTH // 2, 40)
     shadow = font.render(name, True, (10, 5, 25))
     screen_surface.blit(shadow, shadow.get_rect(center=(center[0] + 2, center[1] + 2)))
-    text = font.render(name, True, TEXT_COLOR)
+    text = font.render(name, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
 
 def reset_game():
@@ -150,7 +151,7 @@ def draw_title_screen():
 
 def draw_mission_screen():
     screen_surface.fill((15, 10, 30))
-    draw_state_name("MISSION")
+    draw_state_name("MISSION", color=(230, 190, 90))
     textes = ["INCOMING MESSAGE (sender: unknown)"," Target:   Mr. Banks, senior banker."," Mission:  Enter his dream tonight.","          Make him believe he must transfer","          1,000,000 € to account FR76 ... 0042."," Payment:  generous."," Press SPACE to accept the mission."]
     draw_message(textes)
     if pygame.K_SPACE in game.keys_down:
@@ -185,13 +186,23 @@ def draw_transition_screen():
         game.state = "DUNGEON"
 
 def update_and_draw_dungeon():
+    global dungeon_start
     # The player keeps moving while an arrow key is held down
     move_player(pygame.key.get_pressed())
+
+    if dungeon_start is None:
+        dungeon_start = time.time()
+
+    time_left = Dream_time - (time.time() - dungeon_start)
 
     draw_level(LEVEL_1)
     draw_player()
     # player.player_x, not "from player import player_x": that would be a copy that never moves
     draw_fog(player.player_x, player.player_y)
+    if time_left <= 16:
+        draw_state_name(f'Time left: {int(time_left)}', color=(255, 0, 0))
+    else:
+        draw_state_name(f'Time left: {int(time_left)}', color=(230, 190, 90))
 
 def thread_rect(direction, index, length):
     # The rectangle of a thread, from the top (vertical) or the left (horizontal) edge
@@ -261,7 +272,7 @@ def draw_weaving_screen():
 
 def draw_win_screen():
     screen_surface.fill((120, 90, 20))
-    draw_state_name("WIN")
+    draw_state_name("WIN", color=(230, 190, 90))
     draw_message([
         "Mission complete.",
         "Tomorrow morning, Mr. Banks will make",
