@@ -27,7 +27,7 @@ LEVEL_1 = [
 ]
 LEVEL_2 = [
     "WWWWWWWWWWWWWWWWWWWW",
-    "WP.................W",
+    "W..................W",
     "W..................W",
     "W...WWWWWWWWWW..W..W",
     "W...W........W..W..W",
@@ -46,6 +46,8 @@ LEVEL_2 = [
     "WWWWWWWWWWWWWWWWWWWW",
 ]
 LEVELS = [LEVEL_1, LEVEL_2]
+dungeon_map = list(LEVEL_1)  # a copy of the map as it is at the start: picking up the key changes LEVEL_1
+
 # A copy of the map as it is at the start: picking up the key changes LEVEL_1
 
 
@@ -73,7 +75,7 @@ def find_tile(level, letter):
 def load_level(number):
     global LEVEL_1
     global dungeon_map
-    dungeon_map = list(LEVEL_2)
+    dungeon_map[:] = list(LEVEL_2)
     # Put the key back for a new game.
     # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
 
@@ -87,7 +89,3 @@ def draw_level(level):
             if tile in tile_images:
                 screen_surface.blit(tile_images[tile], position)
 
-for row_number, row in enumerate(LEVEL_2):
-    if len(row) != 20:
-        print("row", row_number, "has", len(row), "letters")
-print(len(LEVEL_2), "rows")
