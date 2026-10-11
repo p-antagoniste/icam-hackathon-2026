@@ -72,7 +72,8 @@ def find_tile(level, letter):
 
 def load_level(number):
     global LEVEL_1
-    dungeon_map = LEVELS[number]
+    global dungeon_map
+    dungeon_map = list(LEVEL_2)
     # Put the key back for a new game.
     # [:] changes the list itself, so the files that imported LEVEL_1 see the new map too
 

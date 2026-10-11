@@ -2,7 +2,7 @@ import math
 import pygame
 
 from window import screen_surface, SCREEN_WIDTH, SCREEN_HEIGHT
-from level import LEVEL_1, TILE_SIZE
+from level import dungeon_map, TILE_SIZE
 
 # ---------------- FOG OF WAR ----------------
 # Dreams are blurry: only the area around the player can be seen,
@@ -47,7 +47,7 @@ def cast_ray(start_x, start_y, angle):
         x += step_x
         y += step_y
         column, row = int(x // TILE_SIZE), int(y // TILE_SIZE)
-        if LEVEL_1[row][column] in BLOCKS_VIEW:
+        if dungeon_map[row][column] in BLOCKS_VIEW:
             return (x, y), (column, row)
     return (x, y), None
 
@@ -69,7 +69,7 @@ def draw_fog(player_x, player_y):
         for dx, dy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]:
             if (column + dx, row + dy) in walls_seen:
                 for between in [(column + dx, row), (column, row + dy)]:
-                    if LEVEL_1[between[1]][between[0]] in BLOCKS_VIEW:
+                    if dungeon_map[between[1]][between[0]] in BLOCKS_VIEW:
                         walls_seen.add(between)
 
     # 2. Full fog everywhere, then cut out (alpha 0 = transparent) what the player can see:

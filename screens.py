@@ -4,7 +4,7 @@ import pygame
 
 import game
 from window import screen_surface, font, TEXT_COLOR, SCREEN_WIDTH, SCREEN_HEIGHT
-from level import LEVEL_1, draw_level, load_level
+from level import dungeon_map, LEVELS, draw_level, load_level
 import player
 from player import move_player, draw_player, reset_player
 from guards import (move_guards, draw_guards, guard_touches_player, player_is_protected,
@@ -253,7 +253,7 @@ def update_and_draw_dungeon():
 
     time_left = Dream_time - (time.time() - dungeon_start) - time_lost
 
-    draw_level(LEVEL_1)
+    draw_level(dungeon_map)
     # Before the fog: far away or behind a wall, the guards are hidden (it's a dream!)
     draw_guards()
     # Just after a touch the player blinks (hidden 1/10 s out of 2) while being protected

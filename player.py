@@ -5,7 +5,7 @@ import pygame
 import game
 from window import screen_surface
 from assets import load_sprite, load_animation, sounds
-from level import LEVEL_1, TILE_SIZE, find_tile
+from level import dungeon_map, TILE_SIZE, find_tile
 
 # ---------------- PLAYER ----------------
 
@@ -43,7 +43,7 @@ def reset_player():
     global have_key, player_x, player_y, player_direction
     have_key = False
     # The position is in pixels: the centre of the player, in the middle of the P tile
-    start_column, start_row = find_tile(LEVEL_1, "P")
+    start_column, start_row = find_tile(dungeon_map, "P")
     player_x = start_column * TILE_SIZE + TILE_SIZE // 2
     player_y = start_row * TILE_SIZE + TILE_SIZE // 2
     player_direction = "south"  # facing the camera
@@ -74,17 +74,17 @@ def hits_wall(hitbox):
     left, right = hitbox.left, hitbox.right - 1
     top, bottom = hitbox.top, hitbox.bottom - 1
     for corner_x, corner_y in [(left, top), (right, top), (left, bottom), (right, bottom)]:
-        if LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "W":
+        if dungeon_map[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "W":
             return True
-        elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "D":
+        elif dungeon_map[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "D":
             if door_try():
                 return True  # locked: the door blocks the player like a wall
-        elif LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "K":
+        elif dungeon_map[corner_y // TILE_SIZE][corner_x // TILE_SIZE] == "K":
             global have_key
             have_key = True
             sounds["key_pickup"].play()
             # Remove the key from the level, so it can't be picked up again
-            LEVEL_1[corner_y // TILE_SIZE] = LEVEL_1[corner_y // TILE_SIZE][:corner_x // TILE_SIZE] + "." + LEVEL_1[corner_y // TILE_SIZE][corner_x // TILE_SIZE + 1:]
+            dungeon_map[corner_y // TILE_SIZE] = dungeon_map[corner_y // TILE_SIZE][:corner_x // TILE_SIZE] + "." + dungeon_map[corner_y // TILE_SIZE][corner_x // TILE_SIZE + 1:]
     return False
 
 def door_try():
