@@ -691,7 +691,7 @@ keys in VS Code:
 **Done when:** everything is on paper, and someone else (not the one who drew it) can follow the
 path from `P` to `K` to `D` with a finger.
 
-#### H1: Make the pictures (Gemini, and PixelLab as a bonus)
+#### H1: Make the pictures (Gemini, and PixelLab as a bonus) (done)
 
 **Goal:** the pictures of mission 2, ready for step H5. You can do this step while someone else
 does H2 to H4.
@@ -909,12 +909,16 @@ You don't need to change anything else:
 **Goal:** the screens tell the story of the mission being played: the right target, the right
 name, the right ending.
 
-**File:** `screens.py`. Pictures not ready yet (H1)? Then write `president_image = banks_image`
-and `win_image_mission_2 = win_image1` for now, and change them when the pictures arrive.
+**File:** `screens.py`. The pictures of H1 are ready in `grafiki/`:
+- `president.jpeg`: the polaroid of the President, for the MISSION screen (square, like
+  `mr_banks.jpeg`);
+- `win_screen_2.jpeg`: the next morning, the President signs the paper, for the WIN screen of
+  mission 2. Like `win_screen.jpeg`, its bottom is dark, so the message panel goes there.
 
 1. **The lists.** At the top, in the `MISSION` section, under the line
    `banks_image = load_picture(...)`, add:
    ```python
+   # Made with Gemini too, from mr_banks.jpeg so it has the same style
    president_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "president.jpeg")
 
    # One value per mission: [mission 1, mission 2]
@@ -941,10 +945,13 @@ and `win_image_mission_2 = win_image1` for now, and change them when the picture
        ],
    ]
    ```
-   And in the `WIN` section, under the other win pictures:
+   And in the `WIN` section, under the line `win_image3 = load_background(...)`:
    ```python
+   # Made with Gemini: the next morning, the President signs. Its bottom is dark too
    win_image_mission_2 = load_background("win_screen_2.jpeg")
    ```
+   **Check the names:** a picture name must be written exactly like the file in `grafiki/`
+   (`president.jpeg`, not `president.jpg`), or the game stops at once with an error.
 2. **MISSION screen.** In `draw_mission_screen()`, 3 changes:
    - the line `screen_surface.blit(banks_image, banks_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))`
      becomes 2 lines:
@@ -984,8 +991,8 @@ and `win_image_mission_2 = win_image1` for now, and change them when the picture
    The 3 endings of mission 1 stay as they are, under it.
 
 **Done when:**
-- [ ] mission 2 shows the President, his mission text, his name in the transition, no choice
-      after the weaving, and his ending;
+- [ ] mission 2 shows the President's polaroid (not Mr. Banks), his mission text, his name in the
+      transition, no choice after the weaving, and the picture of him signing as the ending;
 - [ ] mission 1 looks exactly like before.
 
 **Commit:** `feat: the story of mission 2`.
