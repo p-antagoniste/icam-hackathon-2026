@@ -145,6 +145,9 @@ def draw_label(words, color, center):
     text = font.render(words, True, color)
     screen_surface.blit(text, text.get_rect(center=center))
 
+def draw_state_name(name, color=TEXT_COLOR):
+    # A text at the top of the screen, white if no color is given
+    draw_label(name, color, (SCREEN_WIDTH // 2, 40))
 
 def reset_game():
     # Everything back to the start, to play again
