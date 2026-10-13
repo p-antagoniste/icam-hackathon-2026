@@ -59,7 +59,7 @@ while game_status:
         draw_transition_screen()
     elif game.state == "DUNGEON":
         update_and_draw_dungeon()
-    elif game.state == "LOOM":
+    elif game.state == "LOOM": 
         draw_loom_screen()
     elif game.state == "WEAVING":
         draw_weaving_screen()

@@ -35,6 +35,17 @@ GUARD_ROUTES = [
         ((15, 1), (15, 6)),        # up and down in the room next to the door
         ((6, 1.5), (18, 1.5)),     # top corridor to the door: blocks rows 1 and 2
     ],
+        [   # mission 2
+        ((1, 15.5), (16, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+        ((1, 8.5), (19, 8.5)),     # middle corridor: blocks rows 8 and 9
+        ((15, 1), (15, 6)),        # up and down in the room next to the door
+        ((6, 1.5), (18, 1.5)),     # top corridor to the door: blocks rows 1 and 2
+    ],    [   # mission 2
+        ((1, 15.5), (16, 15.5)),   # bottom corridor to the key: blocks rows 15 and 16
+        ((1, 8.5), (19, 8.5)),     # middle corridor: blocks rows 8 and 9
+        ((15, 1), (15, 6)),        # up and down in the room next to the door
+        ((6, 1.5), (18, 1.5)),     # top corridor to the door: blocks rows 1 and 2
+    ],
 ]
 
 # One dictionary per guard, filled by reset_guards() below

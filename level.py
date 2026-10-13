@@ -45,7 +45,47 @@ LEVEL_2 = [
     "W...............W.PW",
     "WWWWWWWWWWWWWWWWWWWW",
 ]
-LEVELS = [LEVEL_1, LEVEL_2]
+LEVEL_3 = [
+    "WWWWWWWWWWWWWWWWWWWW",
+    "W..................W",
+    "W..................W",
+    "W...WWWWWWWWWW..W..W",
+    "W...W........W..W..W",
+    "W...W....W......W..W",
+    "W...WP...W......WD.W",
+    "W...WWWWWWWWWWWWWWWW",
+    "W..................W",
+    "W..................W",
+    "WWWWWWWW...WWWWWW..W",
+    "W......W...W....W..W",
+    "W......W...W....W..W",
+    "WK..W..W.....W..W..W",
+    "WWWWW..WWWWWWW..W..W",
+    "W...............W..W",
+    "W...............W..W",
+    "WWWWWWWWWWWWWWWWWWWW",
+]
+LEVEL_4 = [
+    "WWWWWWWWWWWWWWWWWWWW",
+    "W..................W",
+    "W..................W",
+    "W...WWWWWWWWWW..W..W",
+    "W...W........W..W..W",
+    "W...W....W......W..W",
+    "W...W....W......WD.W",
+    "W...WWWWWWWWWWWWWWWW",
+    "W..................W",
+    "W..................W",
+    "WWWWWWWW...WWWWWW..W",
+    "WP.....W...W....W..W",
+    "W......W...W....W..W",
+    "WK..W..W.....W..W..W",
+    "WWWWW..WWWWWWW..W..W",
+    "W...............W..W",
+    "W...............W..W",
+    "WWWWWWWWWWWWWWWWWWWW",
+]
+LEVELS = [LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4]
 # The map being played now: a copy of a level, so picking up the key changes the copy
 # and LEVEL_1 and LEVEL_2 stay as they are for the next game
 dungeon_map = list(LEVEL_1)

@@ -34,10 +34,12 @@ client_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonymous_client.jp
 banks_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "mr_banks.jpeg")
 # Made with Gemini too, from mr_banks.jpeg so it has the same style
 president_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "president.jpeg")
+anonymous_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "anonimous_image.jpg")
+julury_image = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "julty_image.jpg")
+you = load_picture((PORTRAIT_SIZE, PORTRAIT_SIZE), "you.jpg")
 
-
-TARGET_NAMES = ["Mr. Banks", "President of France"]
-target_images = [banks_image, president_image]
+TARGET_NAMES = ["Mr. Banks", "President of France", "Miss Julyry", "Anonymous"]
+target_images = [banks_image, president_image, julury_image, anonymous_image]
 MISSION_TEXTS = [
     [   # mission 1
         "INCOMING MESSAGE",
@@ -57,6 +59,25 @@ MISSION_TEXTS = [
         " Payment:  much more than last time.",
         " Press SPACE to accept the mission.",
     ],
+    [   # mission 3
+        "INCOMING MESSAGE",
+        " Target:   Miss Julyry, the owner of the julury store.",
+        " Mission:  Enter her dream tonight.",
+        "           Make her believe she must give",
+        "           to anonymous all her jewels and money.",
+        " Payment:  same as last time.",
+        " Press SPACE to accept the mission.",
+    ],
+    [   # mission 4
+        "INCOMING MESSAGE",
+        " Target:   Anonymous, the hacker.",
+        " Mission:  Enter his dream tonight.",
+        "           Make him believe he must stop",
+        "           attacking banks and other institutions.",
+        "           and give his self to the president.",
+        " Payment:  nothing.",
+        " Press SPACE to accept the mission.",
+    ],
 ]
 
 # ---------------- WIN ----------------
@@ -68,6 +89,12 @@ win_image3 = load_background("second try.jpg")
 win_image_mission_2 = load_background("win_screen_2.jpeg")
 win_image_mission2_2 = load_background("end searche.jpg")
 win_image_mission3_2 = load_background("mort.jpg")
+win_image_mission_3 = load_background("win_3.jpg")
+win_image_mission2_3 = load_background("find.jpg")
+win_image_mission3_3 = load_background("wich_side_are_you.jpg")
+win_image_mission_4 = load_background("win_4.jpg")
+win_image_mission3_4 = load_background("what.jpg")
+win_image_mission2_4 = load_background("killed.jpg")
 WIN_MESSAGE_Y = 612  # the middle of the message, low enough to not hide Mr. Banks
 
 # ---------------- REVEAL ----------------
@@ -82,7 +109,9 @@ REVEAL_MESSAGE_Y = 595  # a bit higher than WIN_MESSAGE_Y: the message has one m
 wake_up_image = load_background("wake_up.jpeg")
 # Made with Gemini too, from wake_up.jpeg and president.jpeg: the President wakes up
 wake_up_image_mission_2 = load_background("wake_up_m2.jpeg")
-wake_up_images = [wake_up_image, wake_up_image_mission_2]
+wake_up_image_mission_4 = load_background("wake_up_3.jpg")
+wake_up_image_mission_3 = load_background("wake_up_4.jpg")
+wake_up_images = [wake_up_image, wake_up_image_mission_2, wake_up_image_mission_3, wake_up_image_mission_4]
 
 # ---------------- TRANSITION ----------------
 TRANSITION_DURATION = 3  # seconds
@@ -232,10 +261,16 @@ def draw_mission_screen():
     # Who sends the mission on the left, who it is about on the right
     client_x = SCREEN_WIDTH // 4
     target_x = SCREEN_WIDTH * 3 // 4
-    screen_surface.blit(client_image, client_image.get_rect(midtop=(client_x, PORTRAIT_TOP)))
+    if game.mission_number == 3:
+        screen_surface.blit(you, you.get_rect(midtop=(client_x, PORTRAIT_TOP)))
+    else:
+        screen_surface.blit(client_image, client_image.get_rect(midtop=(client_x, PORTRAIT_TOP)))
     target_image = target_images[game.mission_number]
     screen_surface.blit(target_image, target_image.get_rect(midtop=(target_x, PORTRAIT_TOP)))
-    draw_label("The client: ???", CLIENT_COLOR, (client_x, LABEL_Y))
+    if game.mission_number == 3:
+        draw_label("The client: You", CLIENT_COLOR, (client_x, LABEL_Y))
+    else:
+        draw_label("The client: ???", CLIENT_COLOR, (client_x, LABEL_Y))
     draw_label("The target: " + TARGET_NAMES[game.mission_number], TARGET_COLOR, (target_x, LABEL_Y))
 
     textes = MISSION_TEXTS[game.mission_number]
@@ -440,6 +475,30 @@ def draw_weaving_screen():
         elif pygame.K_3 in game.keys_down:
             THE_VICTORY_NUMBER = 3
             game.state = "WIN"
+    if game.mission_number == 2:
+        textes_2 = ["Chose the weath-in threds ", " [1]   Give all your julry to the ... ? thread", " [2]   find and attack the anonymous thread", " [3]   Do nothing and leave the dream", "Chose a number."]
+        draw_message(textes_2)
+        if pygame.K_1 in game.keys_down:
+            THE_VICTORY_NUMBER = 31
+            game.state = "WIN"
+        elif pygame.K_2 in game.keys_down:
+            THE_VICTORY_NUMBER = 32
+            game.state = "WIN"
+        elif pygame.K_3 in game.keys_down:
+            THE_VICTORY_NUMBER = 33
+            game.state = "WIN"
+    if game.mission_number == 3:
+        textes_2 = ["Chose the weath-in threds ", " [1]   Give your self to the president thread", " [2]   give your self to me at this address: 303 street of york", " [3]   Do nothing and leave the dream", "Chose a number."]
+        draw_message(textes_2)
+        if pygame.K_1 in game.keys_down:
+            THE_VICTORY_NUMBER = 41
+            game.state = "WIN"
+        elif pygame.K_2 in game.keys_down:
+            THE_VICTORY_NUMBER = 42
+            game.state = "WIN"
+        elif pygame.K_3 in game.keys_down:
+            THE_VICTORY_NUMBER = 43
+            game.state = "WIN"
 
 def draw_wake_up_screen():
     screen_surface.blit(wake_up_images[game.mission_number], (0, 0))
@@ -462,6 +521,7 @@ def draw_win_screen():
             "Mr. Banks made a very generous transfer...",
             "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 1
 
     elif THE_VICTORY_NUMBER == 2:
         screen_surface.blit(win_image2, (0, 0))
@@ -471,6 +531,7 @@ def draw_win_screen():
             "he started searching the thief",
             "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 3
 
     elif THE_VICTORY_NUMBER == 3:
         screen_surface.blit(win_image3, (0, 0))
@@ -479,6 +540,7 @@ def draw_win_screen():
             "but he gives you another chance to be pardoned.",
             "Press SPACE for the next mission.",
         ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 2
 
     elif THE_VICTORY_NUMBER == 21:
         screen_surface.blit(win_image_mission_2, (0, 0))
@@ -487,7 +549,7 @@ def draw_win_screen():
             "The President of France gave all his powers to ... ?",
             "Press SPACE to find out who the client was.",
         ], center_y=WIN_MESSAGE_Y)
-
+        game.mission_number = 4
     elif THE_VICTORY_NUMBER == 22:
         screen_surface.blit(win_image_mission2_2, (0, 0))
         draw_message([
@@ -496,7 +558,7 @@ def draw_win_screen():
             "he started searching the thief",
             "Press SPACE to find out who the client was.",
         ], center_y=WIN_MESSAGE_Y)
-
+        game.mission_number = 4
     elif THE_VICTORY_NUMBER == 23:
         screen_surface.blit(win_image_mission3_2, (0, 0))
         draw_message([
@@ -505,10 +567,63 @@ def draw_win_screen():
             "Because you knew to much so he killed you.",
             "Press SPACE to find out who the client was.",
         ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 31:
+        screen_surface.blit(win_image_mission_3, (0, 0))
+        draw_message([
+            "When she woke up.",
+            "She gave all her julry to ... ?",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 32:
+        screen_surface.blit(win_image_mission2_3, (0, 0))
+        draw_message([
+            "When she woke up.",
+            "She deploide all the scurity mesurs to find the thief.",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 33:
+        screen_surface.blit(win_image_mission3_3, (0, 0))
+        draw_message([
+            "You did none of the missions.",
+            "You just left the country and",
+            "lived a happy life with Mr Kitty cat.",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 41:
+        screen_surface.blit(win_image_mission_4, (0, 0))
+        draw_message([
+            "You oblige him to give his self to the president.",
+            "He was very happy to do it.",
+            "And the president rewarded you with a lot of money.",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 42:
+        screen_surface.blit(win_image_mission2_4, (0, 0))
+        draw_message([
+            "You did a fatal error by making him come to you.",
+            "He use the opportunity to attack you and kill you.",
+            "He is now still attacking the banks and other institutions.",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
+    elif THE_VICTORY_NUMBER == 43:
+        screen_surface.blit(win_image_mission3_4, (0, 0))
+        draw_message([
+            "On wich side you are? You did nothing and left the dream.",
+            "Now he is still attacking the banks and other institutions.",
+            "But you are still alive and you can live a happy life with Mr Kitty cat.",
+            "Press SPACE to find out who the client was.",
+        ], center_y=WIN_MESSAGE_Y)
+        game.mission_number = 4
     # SPACE: the next mission, or who the client was after the last mission
     if pygame.K_SPACE in game.keys_down:
-        if game.mission_number < len(LEVELS) - 1:
-            game.mission_number = game.mission_number + 1
+        if game.mission_number < len(LEVELS) :
+            
             reset_game()
             game.state = "MISSION"
         else:

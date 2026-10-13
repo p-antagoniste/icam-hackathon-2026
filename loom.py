@@ -45,10 +45,28 @@ SONG_2 = (
     "LR.LR.UD.UD.LDUR"  # beats 40-48
     "LDURLDURL...L..."  # beats 48-56: the end of the music
 )
-SONGS = [SONG_1, SONG_2]
-SCROLL_SPEEDS = [300, 360] 
-GOOD_WINDOWS = [0.16, 0.14]  # seconds: how long before/after the target time a key press is accepted
-PASS_PERCENTS = [60, 65]    # percentage of notes that must be hit to pass the mission
+SONG_3 = (
+    "....L...R...L.R."  # beats 0-8: the soft start of the music
+    "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
+    "L.R.LDUR.R.L.URD"  # beats 16-24
+    "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
+    "LDUR.RUDL.LDUR.."  # beats 32-40
+    "LR.LR.UD.UD.LDUR"  # beats 40-48
+    "LDURLDURL...L..D"  # beats 48-56: the end of the music
+)
+SONG_4 = (
+    "....L...R...L.R."  # beats 0-8: the soft start of the music
+    "L.D.U.R.L.D.U.R."  # beats 8-16: the drums start
+    "L.R.LDUR.R.L.URD"  # beats 16-24
+    "L.DUR.UDL.RUD.LR"  # beats 24-32: the music gets loud
+    "LDUR.RUDL.LDUR.."  # beats 32-40
+    "LR.LR.UD.UD.LDUR"  # beats 40-48
+    "LDURLDURL...L..R"  # beats 48-56: the end of the music
+)
+SONGS = [SONG_1, SONG_2, SONG_3, SONG_4]
+SCROLL_SPEEDS = [300, 360, 360, 360]  # pixels per second: how fast the arrows climb, one per mission
+GOOD_WINDOWS = [0.16, 0.14, 0.14, 0.14]  # seconds: how long before/after the target time a key press is accepted
+PASS_PERCENTS = [60, 65, 65, 65]    # percentage of notes that must be hit to pass the mission
 # The 4 lanes, in the order of Dance Dance Revolution: left, down, up, right
 LANES = ["L", "D", "U", "R"]
 LANE_KEYS = {"L": pygame.K_LEFT, "D": pygame.K_DOWN, "U": pygame.K_UP, "R": pygame.K_RIGHT}
